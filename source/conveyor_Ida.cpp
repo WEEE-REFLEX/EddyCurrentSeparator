@@ -70,7 +70,7 @@ double sphrad2 = 0.25e-3;
 double sphrad3 = 0.794e-3;
 double particles_dt;
 double debris_number = 0;
-double max_numb_particles = 100;
+double max_numb_particles = 1000;
 
 
 // conveyor constant
@@ -130,7 +130,7 @@ bool irr_cast_shadows = true;
 
 int totframes = 0;
 	
-bool init_particle_speed = true;
+bool init_particle_speed = false;
 
 double particle_magnification = 3; // for larger visualization of particle
 
@@ -1199,7 +1199,8 @@ int main(int argc, char* argv[])
 	try
 	{
 		//my_python.ImportSolidWorksSystem("../CAD_conveyor/conveyor_Ida", mphysicalSystem);  // note, don't type the .py suffix in filename..
-		my_python.ImportSolidWorksSystem("../CAD_conveyor/prova_ida_senzacinghia", mphysicalSystem);
+		//my_python.ImportSolidWorksSystem("../CAD_conveyor/prova_ida_senzacinghia", mphysicalSystem);
+		my_python.ImportSolidWorksSystem("../CAD_conveyor/prova_edo", mphysicalSystem);
 	}
 	catch (ChException myerror)
 	{
@@ -1289,15 +1290,15 @@ int main(int argc, char* argv[])
 	mconveyor->AddAsset(mbox);
 	
 
-//***TEST***
-ChBodySceneNode* mfence2 = (ChBodySceneNode*)addChBodySceneNode_easyBox(
-											&mphysicalSystem, application.GetSceneManager(),
-											1.0,
-											conveyor_csys.pos + ChVector<>(0, 0.2, 0),
-											ChQuaternion<>(1,0,0,0), 
-											ChVector<>(0.1,0.11,0.1) );
-	//mfence2->GetBody()->SetBodyFixed(true);
-	mfence2->GetBody()->SetFriction(0.1);
+	// //***TEST*** mistero!!! (spiegato) si può togliere...
+	//  ChBodySceneNode* mfence2 = (ChBodySceneNode*)addChBodySceneNode_easyBox(
+	//											&mphysicalSystem, application.GetSceneManager(),
+	//											1.0,
+	//											conveyor_csys.pos + ChVector<>(0, 0.2, 0),
+	//											ChQuaternion<>(1,0,0,0), 
+	//											ChVector<>(0.1,0.11,0.1) );
+	// //mfence2->GetBody()->SetBodyFixed(true);
+	// mfence2->GetBody()->SetFriction(0.1);
 
 
 	// 
