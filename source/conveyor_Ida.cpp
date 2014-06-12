@@ -55,7 +55,7 @@ const double epsilonO = 8.854187e-12; //vacuum permeability
 const double epsilonR = 2.5; //relative permeability
 const double drumspeed = STATIC_rpm*((2.0*CH_C_PI)/60.0); //[rad/s]
 const double drumdiameter = 0.320;
-double STATIC_speed = (drumdiameter/2.0)*(STATIC_rpm*((2.0*CH_C_PI)/60.0)); //[m/s]
+double STATIC_speed = -(drumdiameter/2.0)*(STATIC_rpm*((2.0*CH_C_PI)/60.0)); //[m/s]
 const double eta = 0.0000181; // Air drag coefficent [N*s/m^2]
 const double electrodediameter = 0.038;
 const double U = 30000; // supplied high-voltage [v]
@@ -74,7 +74,7 @@ double max_numb_particles = 1000;
 
 
 // conveyor constant
-const double conveyor_length=0.800;//***ALEX, from CAD
+const double conveyor_length=0.830; //edo from CAD 12/06 //conveyor_length=0.800;//***ALEX, from CAD
 const double conveyor_width=0.4; //***ALEX, from CAD, was 0.6
 const double conv_thick = 0.05; // non troppo sottile, altrimenti non va la collision detection! Non importa se compenetra il cilindro.
 
@@ -1200,7 +1200,8 @@ int main(int argc, char* argv[])
 	{
 		//my_python.ImportSolidWorksSystem("../CAD_conveyor/conveyor_Ida", mphysicalSystem);  // note, don't type the .py suffix in filename..
 		//my_python.ImportSolidWorksSystem("../CAD_conveyor/prova_ida_senzacinghia", mphysicalSystem);
-		my_python.ImportSolidWorksSystem("../CAD_conveyor/prova_edo", mphysicalSystem);
+		//my_python.ImportSolidWorksSystem("../CAD_conveyor/prova_edo", mphysicalSystem);
+		my_python.ImportSolidWorksSystem("../CAD_conveyor/edo_mod_1206", mphysicalSystem);
 	}
 	catch (ChException myerror)
 	{
