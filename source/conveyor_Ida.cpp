@@ -47,15 +47,14 @@ using namespace std;
 // Static values valid through the entire program (bad
 // programming practice, but enough for quick tests)
 
-double STATIC_rpm = 44.8;
-double STATIC_flow = 1000;
+double STATIC_flow = 100; 
+double STATIC_speed = -1; //[m/s]
 
 const double epsilon = 8.85941e-12; // dielectric constant [F/m] *****ida 
 const double epsilonO = 8.854187e-12; //vacuum permeability
 const double epsilonR = 2.5; //relative permeability
-const double drumspeed = STATIC_rpm*((2.0*CH_C_PI)/60.0); //[rad/s]
+const double drumspeed = 261; //[rad/s]
 const double drumdiameter = 0.320;
-double STATIC_speed = -(drumdiameter/2.0)*(STATIC_rpm*((2.0*CH_C_PI)/60.0)); //[m/s]
 const double eta = 0.0000181; // Air drag coefficent [N*s/m^2]
 const double electrodediameter = 0.038;
 const double U = 30000; // supplied high-voltage [v]
@@ -65,9 +64,6 @@ const double h1 = (pow(L,2)+pow((drumdiameter/2),2)-((electrodediameter/2),2))/(
 const double h2 = (pow(L,2)-pow((drumdiameter/2),2)+((electrodediameter/2),2))/(2*L);//analytical parameter****ida
 const double j = sqrt(pow(h1,2)-pow((drumdiameter/2),2));//analytical parameter****ida
 const double f = U/log(((h1+j-(drumdiameter/2))*(h2+j-(electrodediameter/2)))/((drumdiameter/2)+j-h1)*((electrodediameter/2)+j-h2));//analytical parameter****ida
-double sphrad = 0.38e-3;
-double sphrad2 = 0.25e-3;
-double sphrad3 = 0.794e-3;
 double particles_dt;
 double debris_number = 0;
 double max_numb_particles = 1000;
@@ -229,13 +225,13 @@ public:
 							L"Flow [particles/s]", rect<s32>(710,15,800,15+20), false);
 
 				// ..add GUI slider to control the speed
-				scrollbar_speed = application->GetIGUIEnvironment()->addScrollBar(
+				/*scrollbar_speed = application->GetIGUIEnvironment()->addScrollBar(
 								true, rect<s32>(560, 40, 700, 40+20), 0, 102);
 				scrollbar_speed->setMax(100); 
 				//scrollbar_speed->setPos(72);
 			    scrollbar_speed->setPos(((int)((STATIC_speed/2.0 )*67)));
 				text_speed = application->GetIGUIEnvironment()->addStaticText(
-								L"Conv.vel. [m/s]:", rect<s32>(710,40,800,40+20), false);
+								L"Conv.vel. [m/s]:", rect<s32>(710,40,800,40+20), false);*/ //deactivated for the moment!
 
 				// ..add GUI checkmark to enable plotting forces
 				checkbox_plotforces = application->GetIGUIEnvironment()->addCheckBox(false,core::rect<s32>(560,65, 560+150,65+20),
@@ -361,23 +357,17 @@ void create_debris(double dt, double particles_second,
 				   ChPovRay* mpov_exporter)
 {
 
-	double sph_fraction = 0.33;
-	double sph2_fraction = 0;
-	double sph3_fraction = 0.67;
-	double box_fraction = 0;
-	double cyl_fraction = 1-box_fraction-(sph_fraction + sph2_fraction + sph3_fraction);
+	double sph_fraction = 0.8;
+	double box_fraction = 0.2;
+	double cyl_fraction = 1-box_fraction-sph_fraction;
 
 	//double sphrad = 0.6e-3 + (ChRandom()-0.5)*(0.6e-3); vecchia distribuzione
-	//double sphrad = 0.5e-3; messa come variabile globale per esportazione e postprocessing
+	double sphrad = 3e-3; 
 	double cylhei = 0.035;
 	double cylrad = sphrad;
 	double cylmass = CH_C_PI*pow(cylrad,2)*cylhei* 1.0;  // now with default 1.0 density
 	double sphmass = (4./3.)*CH_C_PI*pow(sphrad,3)* 1.0; // now with default 1.0 density
-	double sphmass2 = (4./3.)*CH_C_PI*pow(sphrad2,3)* 1.0; // now with default 1.0 density
-	double sphmass3 = (4./3.)*CH_C_PI*pow(sphrad3,3)* 1.0; // now with default 1.0 density
 	double sphinertia = 0.4*pow(sphrad,2)*sphmass;      // now with default 1.0 density
-	double sphinertia2 = 0.4*pow(sphrad2,2)*sphmass2;      // now with default 1.0 density
-	double sphinertia3 = 0.4*pow(sphrad3,2)*sphmass3;      // now with default 1.0 density
 	double cylinertia = 0.0833*(pow(cylhei,2)+3*pow(sphrad,2))*cylmass;//0.0833*(pow(cylhei,2)+3*pow(sphrad,2))*cylmass;  // now with default 1.0 density
 	double cylinertia2 = 0.5*pow(sphrad,2)*cylmass; //0.5*pow(sphrad,2)*cylmass; // now with default 1.0 density
 	
@@ -459,101 +449,9 @@ void create_debris(double dt, double particles_second,
 			created_body = mrigidBody;
 			created_electrical_asset = electric_asset; // for reference later
 		}//**********************************************************************************************************************
-		if ((rand_shape_fract > sph_fraction) && (rand_shape_fract < sph_fraction + sph2_fraction))
-		{
-			// Create a body
-			ChSharedPtr<ChBody> mrigidBody(new ChBody);
-
-			mrigidBody->SetPos(rand_position);
-			mrigidBody->SetPos_dt(rand_velocity);
-			mrigidBody->SetWvel_par(rand_angvel);
-			mrigidBody->SetMass(sphmass2);
-			mrigidBody->SetInertiaXX(ChVector<>(sphinertia2,sphinertia2,sphinertia2));
-			mrigidBody->SetFriction(0.2f);
-			//mrigidBody->SetImpactC(0.75f); 
-			mrigidBody->SetIdentifier(myid); // NB fatto solo per le sfere!!!!!!!!!
-			      
-			// Define a collision shape 
-			mrigidBody->GetCollisionModel()->ClearModel();
-			mrigidBody->GetCollisionModel()->AddSphere(sphrad2);
-			mrigidBody->GetCollisionModel()->BuildModel();
-			mrigidBody->SetCollide(true);
-
-			// Attach a visualization shape asset. 
-			ChSharedPtr<ChSphereShape> msphere(new ChSphereShape);
-			msphere->GetSphereGeometry().rad = sphrad2 * particle_magnification; 
-			msphere->GetSphereGeometry().center = ChVector<>(0,0,0);
-			mrigidBody->AddAsset(msphere);
-	
-			// Attach a custom asset. Look how to create and add a custom asset to the object! ***ALEX
-			ChSharedPtr<ElectricParticleProperty> electric_asset(new ElectricParticleProperty); 
-			electric_asset->Cdim         = ChVector<>(2*sphrad2,2*sphrad2,2*sphrad2);
-			electric_asset->fraction	 = ElectricParticleProperty::e_fraction_sphere;
-			electric_asset->birthdate	 = mysystem.GetChTime();
-			mrigidBody->AddAsset(electric_asset);
-			
-			// Finally, do not forget to add the body to the system:
-			mysystem.Add(mrigidBody);
-
-			created_body = mrigidBody;
-			created_electrical_asset = electric_asset; // for reference later
-
-        }
-	   if (((rand_shape_fract > sph_fraction + sph2_fraction)) && 
-		   (rand_shape_fract < (sph_fraction + sph2_fraction + sph3_fraction)))
-		{
-			// Create a body
-			ChSharedPtr<ChBody> mrigidBody(new ChBody);
-
-			mrigidBody->SetPos(rand_position);
-			mrigidBody->SetPos_dt(rand_velocity);
-			mrigidBody->SetWvel_par(rand_angvel);
-			mrigidBody->SetMass(sphmass3);
-			mrigidBody->SetInertiaXX(ChVector<>(sphinertia3,sphinertia3,sphinertia3));
-			mrigidBody->SetFriction(0.2f);
-			//mrigidBody->SetImpactC(0.75f); 
-			mrigidBody->SetIdentifier(myid); // NB fatto solo per le sfere!!!!!!!!!
-			      
-			// mrigidBody->SetRollingFriction(0.1);
-			// mrigidBody->SetSpinningFriction(0.1);
-
-
-			// Define a collision shape 
-			mrigidBody->GetCollisionModel()->ClearModel();
-			mrigidBody->GetCollisionModel()->AddSphere(sphrad3);
-			//mrigidBody->GetCollisionModel()->AddSphere(sphrad, &ChVector<>(0.005,0,0)); // etc. optional
-			mrigidBody->GetCollisionModel()->BuildModel();
-			mrigidBody->SetCollide(true);
-
-			// Attach a visualization shape asset. 
-			ChSharedPtr<ChSphereShape> msphere(new ChSphereShape);
-			msphere->GetSphereGeometry().rad = sphrad3 * particle_magnification; 
-			msphere->GetSphereGeometry().center = ChVector<>(0,0,0);
-			mrigidBody->AddAsset(msphere);
-			/* etc. optional
-			ChSharedPtr<ChSphereShape> msphere2(new ChSphereShape);
-			msphere2->GetSphereGeometry().rad = sphrad*5; // test****
-			msphere2->GetSphereGeometry().center = ChVector<>(0.005,0,0);
-			mrigidBody->AddAsset(msphere2);
-			*/
-
-			// Attach a custom asset. Look how to create and add a custom asset to the object! ***ALEX
-			ChSharedPtr<ElectricParticleProperty> electric_asset(new ElectricParticleProperty); 
-			electric_asset->Cdim         = ChVector<>(2*sphrad3,2*sphrad3,2*sphrad3);
-			electric_asset->fraction	 = ElectricParticleProperty::e_fraction_sphere;
-			electric_asset->birthdate	 = mysystem.GetChTime();
-			mrigidBody->AddAsset(electric_asset);
-			
-			// Finally, do not forget to add the body to the system:
-			mysystem.Add(mrigidBody);
-
-			created_body = mrigidBody;
-			created_electrical_asset = electric_asset; // for reference later
-
-		}
-		//***********************************************************************************************************************
-		if ((rand_shape_fract > (sph_fraction + sph2_fraction + sph3_fraction)) && 
-			(rand_shape_fract < box_fraction+(sph_fraction + sph2_fraction + sph3_fraction)))
+		
+		if ((rand_shape_fract > sph_fraction) && 
+			(rand_shape_fract < box_fraction+sph_fraction))
 		{
 			double xscale = 1.3*(1-0.8*ChRandom()); // for oddly-shaped boxes..
 			double yscale = 1.3*(1-0.8*ChRandom());
@@ -596,7 +494,7 @@ void create_debris(double dt, double particles_second,
 			created_electrical_asset = electric_asset; // for reference later
 		}
 
-		if ((rand_shape_fract > box_fraction+(sph_fraction + sph2_fraction + sph3_fraction)))
+		if (rand_shape_fract > box_fraction+sph_fraction)
 		{
 
 			//	ChCollisionModel::SetDefaultSuggestedEnvelope(0.002);
@@ -649,11 +547,11 @@ void create_debris(double dt, double particles_second,
 		if (!created_electrical_asset.IsNull())
 		{
 			  
-			//double rand_mat = ChRandom();
+			double rand_mat = ChRandom();
 
-			//double plastic_fract = 0.7;
+			double plastic_fract = 0.7;
 				
-			if (rand_shape_fract > sph_fraction+sph2_fraction+box_fraction+cyl_fraction) //(rand_mat < plastic_fract)
+			if (rand_mat < plastic_fract)
 			{
 				created_electrical_asset->conductivity = 0;
                 created_electrical_asset->material_type = ElectricParticleProperty::e_mat_plastic;
@@ -669,7 +567,7 @@ void create_debris(double dt, double particles_second,
 				created_body->SetMass( created_body->GetMass() * ::densityPlastic);
 				created_body->SetInertiaXX( created_body->GetInertiaXX() * ::densityPlastic);
 			} 
-			if (rand_shape_fract < sph_fraction+sph2_fraction+box_fraction+cyl_fraction) //(rand_mat > plastic_fract)
+			if (rand_mat > plastic_fract)
 			{
 				created_electrical_asset->conductivity = 6428000;//6670000 conducibilità vecchia;
 				created_electrical_asset->material_type = ElectricParticleProperty::e_mat_metal;
@@ -825,17 +723,8 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 
 						int totframes)		
 {
-	char padnumber[100];
-	char filename[200];
-	sprintf(padnumber, "%d", (totframes+10000));
-	sprintf(filename, "output\\forces%s.dat", padnumber+1);
-	//ChStreamOutAsciiFile data_forces(filename);
-	ofstream test;
-	test.open("output\\test.dat",ios::app); 
+
 	
-
-
-
 	for (unsigned int i=0; i<msystem->Get_bodylist()->size(); i++)
 	{
 		ChBody* abody = (*msystem->Get_bodylist())[i];
@@ -904,7 +793,7 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 
 			ChVector<> StokesForce = electricproperties->StokesForce;
 			
-			electricproperties->StokesForce = (-6*CH_C_PI*eta*average_rad) * velocity;
+			electricproperties->StokesForce =0;
 	
 			abody->Accumulate_force(StokesForce, abody->GetPos(), false);
 
@@ -944,7 +833,7 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 
 				ChVector<> ElectricForce = electricproperties->ElectricForce;
 
-				electricproperties->ElectricForce = 0.832 * electricproperties->chargeM * vE;
+				electricproperties->ElectricForce = 0;
 
 				// switch off electric forces if too out-of-plane
 				if ((mrelpos.z > conveyor_width*0.5) || (mrelpos.z < -conveyor_width*0.5))
@@ -974,7 +863,7 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 						electricproperties->chargeP = 3*CH_C_PI*epsilonO*pow(2*average_rad,2)*450000*(epsilonR/(epsilonR+2)); // charge
 						electricproperties->chargeP *= (1.0 - 0.3*ChRandom() );
 					}
-				} //15000000,750000, 
+				} 
 				// discharge the particle? (contact w. blade)
 				if (distx < -(drumdiameter*0.5 -0.009) && (disty > -(drumdiameter*0.5 + 0.009)) || sqrt(pow(distx,2)+ pow(disty,2))> (1.03*drumdiameter*0.5))
 				{
@@ -984,8 +873,8 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 				ChVector<> ElectricImageForce = electricproperties->ElectricImageForce;
 
 
-				electricproperties->ElectricImageForce.x = -((pow( electricproperties->chargeP,2))/(4*CH_C_PI*epsilon*pow((2*average_rad),2))*cos(atan2(disty,distx)));
-				electricproperties->ElectricImageForce.y = -((pow( electricproperties->chargeP,2))/(4*CH_C_PI*epsilon*pow((2*average_rad),2))*sin(atan2(disty,distx)));
+				electricproperties->ElectricImageForce.x = 0;
+				electricproperties->ElectricImageForce.y = 0;
 				electricproperties->ElectricImageForce.z = 0;	
 						
 				
@@ -1280,7 +1169,7 @@ int main(int argc, char* argv[])
 	mconveyor->ConcatenatePreTransformation(ChFrameMoving<>(ChVector<>(0, -conv_thick/2., 0))); // cut if csys already in the middle 
 
 	//mconveyor->GetPlate()->GetCollisionModel()->SetFamily(8); // note the additional  ->GetPlate()
-	//mconveyor->GetPlate()->GetCollisionModel()->SetFamilyMaskNoCollisionWithFamily(7); 
+	mconveyor->GetPlate()->GetCollisionModel()->SetFamilyMaskNoCollisionWithFamily(7); 
 
 	mphysicalSystem.Add(mconveyor);
 
