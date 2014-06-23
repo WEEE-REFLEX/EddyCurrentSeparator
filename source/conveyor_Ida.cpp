@@ -51,22 +51,11 @@ double STATIC_flow = 100;
 double STATIC_speed = -1; //[m/s]
 
 const double mu0 = 0.0000012566; //vacuum permability [Tm/A]  ****** Edo
-const double epsilon = 8.85941e-12; // dielectric constant [F/m] *****ida 
-const double epsilonO = 8.854187e-12; //vacuum permeability
-const double epsilonR = 2.5; //relative permeability
 const double drumspeed = 261; //[rad/s]
 const double numberofpoles = 9;
 const double intensity = 0.32; 
-const double drumdiameter = 0.320;
+const double drumdiameter = 0.30;
 const double eta = 0.0000181; // Air drag coefficent [N*s/m^2]
-const double electrodediameter = 0.038;
-const double U = 30000; // supplied high-voltage [v]
-const double L = 0.267; //certer distance of rotating roll electrode and electrostatic pole *****ida
-const double alpha = (CH_C_PI/180)*30; //angle of horizontal line and electrodes center line *****ida
-const double h1 = (pow(L,2)+pow((drumdiameter/2),2)-((electrodediameter/2),2))/(2*L); //analytical parameter****ida
-const double h2 = (pow(L,2)-pow((drumdiameter/2),2)+((electrodediameter/2),2))/(2*L);//analytical parameter****ida
-const double j = sqrt(pow(h1,2)-pow((drumdiameter/2),2));//analytical parameter****ida
-const double f = U/log(((h1+j-(drumdiameter/2))*(h2+j-(electrodediameter/2)))/((drumdiameter/2)+j-h1)*((electrodediameter/2)+j-h2));//analytical parameter****ida
 double particles_dt;
 double debris_number = 0;
 double max_numb_particles = 1000;
@@ -367,7 +356,7 @@ void create_debris(double dt, double particles_second,
 	double cyl_fraction = 1-box_fraction-sph_fraction;
 
 	//double sphrad = 0.6e-3 + (ChRandom()-0.5)*(0.6e-3); vecchia distribuzione
-	double sphrad = 1e-2;//3e-3; 
+	double sphrad = 0.8e-2;//3e-3; 
 	double cylhei = 0.035;
 	double cylrad = sphrad;
 	double cylmass = CH_C_PI*pow(cylrad,2)*cylhei* 1.0;  // now with default 1.0 density
@@ -393,12 +382,9 @@ void create_debris(double dt, double particles_second,
 
 		double rand_shape_fract = ChRandom();
 
-		double max_angvel = 12;
+		
 		ChVector<> rand_position = mnozzle_csys.TrasformLocalToParent( ChVector<>(-0.5*xnozzlesize+ChRandom()*xnozzlesize, 0, -0.5*znozzlesize+ChRandom()*znozzlesize) ) ;
-        ChVector<> rand_velocity =(0.4 + (ChRandom()-0.5)*(0.4), 0,0);
-		ChVector<> rand_angvel =((ChRandom()-0.5)*2*(max_angvel), 
-								 (ChRandom()-0.5)*2*(max_angvel),
-								 (ChRandom()-0.5)*2*(max_angvel));
+     
 		//
 		// 1 ---- Create particle 
 		// 
@@ -409,12 +395,9 @@ void create_debris(double dt, double particles_second,
 			ChSharedPtr<ChBody> mrigidBody(new ChBody);
 
 			mrigidBody->SetPos(rand_position);
-			mrigidBody->SetPos_dt(rand_velocity);
-			mrigidBody->SetWvel_par(rand_angvel);
 			mrigidBody->SetMass(sphmass);
 			mrigidBody->SetInertiaXX(ChVector<>(sphinertia,sphinertia,sphinertia));
 			mrigidBody->SetFriction(0.2f);
-			mrigidBody->SetImpactC(0.75f);
 			mrigidBody->SetIdentifier(myid); // NB fatto solo per le sfere!!!!!!!!!
 			
 			       
@@ -614,7 +597,7 @@ void create_debris(double dt, double particles_second,
 		if (!created_body.IsNull() && do_velocity_clamping)
 		{
 			created_body->SetLimitSpeed(true);
-			created_body->SetMaxSpeed(5);
+			created_body->SetMaxSpeed(100);
 			created_body->SetMaxWvel(250);
 		}
 
@@ -719,14 +702,7 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 						double drumdiameter,
 						int totframes)		
 {
-	char padnumber[100];
-	char filename[200];
-	sprintf(padnumber, "%d", (totframes+10000));
-	sprintf(filename, "output\\forces%s.dat", padnumber+1);
-	//ChStreamOutAsciiFile data_forces(filename);
-	ofstream test;
-	test.open("output\\test.dat",ios::app); 
-
+	
 	for (unsigned int i=0; i<msystem->Get_bodylist()->size(); i++)
 	{
 		ChBody* abody = (*msystem->Get_bodylist())[i];
@@ -777,8 +753,6 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 		ChVector<> yG = RotM.Matr_x_Vect(VECT_Y);
 		ChVector<> particleRspeed = abody->GetWvel_par();
 		ChVector<> particleRspeed_loc = abody->GetWvel_loc();
-		int a=0;
-		int b=abody->GetIdentifier();
 		double rho = acos(yG.y/yG.Length());
 		
 		
@@ -802,9 +776,9 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 			d=diam.x;
 			double csi = mu0*d*d* sigma *(drumspeed*numberofpoles+particleRspeed.z);
 			constR = 21*pow(csi,2)/(20*(1764+pow(csi,2)));
-			constI = 21*42*csi/(20*(1764+pow(csi,2)));
+			constI = 21*42*pow(csi,2)/(20*(1764+pow(csi,2)));
 			//constTorque = 1/40*pow(diam.x,2)*(4/3*CH_C_PI*pow(diam.x/2,3))* sigma*(drumspeed*numberofpoles+particleRspeed.z);
-			Volume = 1.3333*CH_C_PI*pow(diam.x/2,3);
+			Volume = (4./3.)*CH_C_PI*pow(diam.x/2,3);
 			//constTorque = -pow(B,2)*4/3*CH_C_PI*pow(diam.x/2,3)*constI/mu0;
 
 
@@ -815,7 +789,7 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 			d=diam.x;
 			double csi = mu0*pow(diam.x,2)* sigma*(drumspeed*numberofpoles+particleRspeed.z);
 			constR = 21*pow(csi,2)/20/(1764+pow(csi,2));
-			constI = 21*42*csi/20/(1764+pow(csi,2));
+			constI = 21*42*pow(csi,2)/(1764+pow(csi,2));
 			//constTorque = 1/40*pow(diam.x,2)*(4/3*CH_C_PI*pow(diam.x/2,3))* sigma*(drumspeed*numberofpoles+particleRspeed.z);
 			Volume = pow(diam.x,3);
 			//constTorque = -pow(B,2)*pow(diam.x,3)*constI/mu0;
@@ -863,14 +837,7 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 			CD=CDdisk;
 		}
 
-		ChVector<> InducedForce;
-		/*double Induced_Fr = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*constR;
-		double Induced_Fphi = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*constI;
-		double InducedF = sqrt(pow(Induced_Fr,2)+pow(Induced_Fr,2));*/
-		InducedForce.x = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*(constR*cos(phi)+constI*sin(phi));
-		InducedForce.y = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*(constR*sin(phi)-constI*cos(phi));
-		InducedForce.z = 0;	
-		abody->Accumulate_force(InducedForce, abody->GetPos(), false);
+		
 
 		ChVector<> DragForce;
 		DragForce.x = -CD*ro*velocity_norm_sq*CH_C_PI*diam.x*diam.y/2*cos(phi2);
@@ -885,28 +852,25 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 		LiftForce.z = 0;	
 	
 		abody->Accumulate_force(LiftForce, abody->GetPos(), false);
+
+		ChVector<> InducedForce;
+		/*double Induced_Fr = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*constR;
+		double Induced_Fphi = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*constI;
+		double InducedF = sqrt(pow(Induced_Fr,2)+pow(Induced_Fr,2));*/
+		InducedForce.x = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*(constR*cos(phi)+constI*sin(phi));
+		InducedForce.y = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*(constR*sin(phi)-constI*cos(phi));
+		InducedForce.z = 0;	
+		abody->Accumulate_force(InducedForce, abody->GetPos(), false);
+         
+		// pare che siano queste due a dare problemi **Ida
 		
 		ChVector<> InducedTorque;
 		InducedTorque.x = 0;
 		InducedTorque.y = 0;
 		//InducedTorque.z = -constTorque*pow(B,2);
-		InducedTorque.z = -pow(B,2)*Volume*constI/mu0;
+		InducedTorque.z = (-pow(B,2)*Volume*constI)/mu0;
 		abody->Accumulate_torque(InducedTorque, false);
-		/*
-		data_forces << phi << ",\t";
-		data_forces << mu0 << ",\t";
-		data_forces << msystem->GetChTime() << ",\t";
-		data_forces << distance << ",\t";
-		data_forces << drumspeed*numberofpoles+particleRspeed.z << ",\t";
-		data_forces << sigma << ",\t";
-		data_forces << (numberofpoles+1)*pow(B,2)*Volume/mu0/distance*constR << ",\t";
-		data_forces << (numberofpoles+1)*pow(B,2)*Volume/mu0/distance*constI << ",\t";
-		data_forces << InducedForce.x << ",\t";
-		data_forces << InducedForce.y << ",\t";
-		data_forces << InducedForce.z << ",\t";
-		data_forces << constR << ",\t";
-		data_forces << constI << ",\t";
-		data_forces << shape << "\n";*/
+		
 		//coordinate del rotore. la y del rotore è la z delle coordinate del sistema
 		ChVector<> pos = drum_csys.TrasformParentToLocal(abody->GetPos());
 		ChVector<> acc_force=abody->Get_accumulated_force();
@@ -919,40 +883,8 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 
 		double posx=pos.x;
 		double posy=pos.y;
-		if (i>12+n &&totframes%10==0){
-	/*	test << b << "\t";
-		test << diam.x << "\t";
-		test << diam.y << "\t";
-		test << diam.z << "\t";
-		test << posx << "\t";
-		test << posy << "\t";
-		test << pos.z << "\t";
-		test << B << "\t";
-		test << distance << "\t";*/
-		test << ingxx << "\t";
-		test << ingyy << "\t";
-		test << ingzz << "\t";
- 		/*test << particleRspeed.x << "\t";
-		test << particleRspeed.y << "\t"; 
-		test << particleRspeed.z << "\t";*/
-		//test << particleRspeed_loc.x << "\t";
-		//test << particleRspeed_loc.y << "\t"; 
-		//test << particleRspeed_loc.z << "\t";
-		/*test << acc_force.x << "\t";
-		test << acc_force.y << "\t";
-		test << acc_force.z << "\t";
-		test << DragForce.x << "\t";
-		test << DragForce.y << "\t";
-		test << LiftForce.x << "\t";
-		test << LiftForce.y << "\t";
-		test << InducedForce.x << "\t";
-		test << InducedForce.y << "\t";
-		test << acc_force.Length() << "\t";
-		test << acc_torque.z << "\t"; 
-		test << acc_torque.Length() << "\t";*/
-		test << alpha << "\t";
-		//test << abody->GetConductivity() << "\n"; //dava problemi ***edo
-		}    
+
+	
 		
 	}
 }
