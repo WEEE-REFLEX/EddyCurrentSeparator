@@ -399,9 +399,7 @@ void create_debris(double dt, double particles_second,
 			mrigidBody->SetInertiaXX(ChVector<>(sphinertia,sphinertia,sphinertia));
 			mrigidBody->SetFriction(0.2f);
 			mrigidBody->SetIdentifier(myid); // NB fatto solo per le sfere!!!!!!!!!
-			
-			       
-			mrigidBody->SetRollingFriction(0.2);
+		    mrigidBody->SetRollingFriction(0.2);
 			mrigidBody->SetSpinningFriction(0.2);
 
 
@@ -537,7 +535,7 @@ void create_debris(double dt, double particles_second,
 			  
 			double rand_mat = ChRandom();
 
-			double plastic_fract = 0.7;
+			double plastic_fract = 0.5;
 				
 			if (rand_mat < plastic_fract)
 			{
@@ -708,7 +706,7 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 		ChBody* abody = (*msystem->Get_bodylist())[i];
 
 		ChVector<> diam = VNULL; // default values, to be set few lines below...
-		double sigma = 0;
+		double sigma;
 
 		// Fetch the ElectricParticleProperty asset from the list of 
 		// assets that have been attached to the object, and retrieve the
@@ -733,7 +731,7 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 		// calculate the position of body COG with respect to the drum COG:
 		ChVector<> mrelpos = drum_csys.TrasformParentToLocal(abody->GetPos());
 		double distx=mrelpos.x;
-		double disty=-mrelpos.z;
+		double disty=mrelpos.y;
 		ChVector<> velocity=abody->GetPos_dt();
 		double velocityx=velocity.x;
 		double velocityy=velocity.y;
@@ -776,7 +774,7 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 			d=diam.x;
 			double csi = mu0*d*d* sigma *(drumspeed*numberofpoles+particleRspeed.z);
 			constR = 21*pow(csi,2)/(20*(1764+pow(csi,2)));
-			constI = 21*42*pow(csi,2)/(20*(1764+pow(csi,2)));
+			constI = 21*42*csi/(20*(1764+pow(csi,2)));
 			//constTorque = 1/40*pow(diam.x,2)*(4/3*CH_C_PI*pow(diam.x/2,3))* sigma*(drumspeed*numberofpoles+particleRspeed.z);
 			Volume = (4./3.)*CH_C_PI*pow(diam.x/2,3);
 			//constTorque = -pow(B,2)*4/3*CH_C_PI*pow(diam.x/2,3)*constI/mu0;
@@ -789,7 +787,7 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 			d=diam.x;
 			double csi = mu0*pow(diam.x,2)* sigma*(drumspeed*numberofpoles+particleRspeed.z);
 			constR = 21*pow(csi,2)/20/(1764+pow(csi,2));
-			constI = 21*42*pow(csi,2)/(1764+pow(csi,2));
+			constI = 21*42*csi/(1764+pow(csi,2));
 			//constTorque = 1/40*pow(diam.x,2)*(4/3*CH_C_PI*pow(diam.x/2,3))* sigma*(drumspeed*numberofpoles+particleRspeed.z);
 			Volume = pow(diam.x,3);
 			//constTorque = -pow(B,2)*pow(diam.x,3)*constI/mu0;
@@ -862,8 +860,7 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 		InducedForce.z = 0;	
 		abody->Accumulate_force(InducedForce, abody->GetPos(), false);
          
-		// pare che siano queste due a dare problemi **Ida
-		
+
 		ChVector<> InducedTorque;
 		InducedTorque.x = 0;
 		InducedTorque.y = 0;
