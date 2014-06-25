@@ -681,7 +681,7 @@ void purge_debris(ChSystem& mysystem, double max_age = 5.0)
 			ChSharedPtr<ChAsset> myasset = abody->GetAssetN(na);
 			if (myasset.IsType<ElectricParticleProperty>())
 			{
-				ChSharedPtr<ElectricParticleProperty> electricproperties = myasset;
+				ChSharedPtr<ElectricParticleProperty> electricproperties = myasset.DynamicCastTo<ElectricParticleProperty>();
 				double particle_birthdate  = electricproperties->birthdate ;
 				double particle_age = mysystem.GetChTime() - particle_birthdate;
 				if (particle_age > max_age)
@@ -742,7 +742,7 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 			{
 				// OK! THIS WAS A PARTICLE! ***ALEX
 				was_a_particle = true;		
-				electricproperties = myasset;
+				electricproperties = myasset.DynamicCastTo<ElectricParticleProperty>();
 			} 
 		}
 
@@ -934,7 +934,7 @@ void draw_forces(ChIrrApp& application, double scalefactor = 1.0)
 			{
 				// OK! THIS WAS A PARTICLE! ***ALEX
 				was_a_particle = true;		
-				electricproperties = myasset;
+				electricproperties = myasset.DynamicCastTo<ElectricParticleProperty>();
 			} 
 		}
 
@@ -973,7 +973,7 @@ void UpdateTrajectories(ChIrrApp& application)
 			if (myasset.IsType<ParticleTrajectory>())
 			{
 				// OK! trajectory storage!	
-				trajectoryasset = myasset;
+				trajectoryasset = myasset.DynamicCastTo<ParticleTrajectory>();
 				trajectoryasset->positions.push_back( abody->GetPos() );
 				trajectoryasset->speeds.push_back( abody->GetPos_dt() );
 				
@@ -1008,7 +1008,7 @@ void DrawTrajectories(ChIrrApp& application)
 			ChSharedPtr<ChAsset> myasset = abody->GetAssetN(na);
 			if (myasset.IsType<ParticleTrajectory>())
 			{
-				trajectoryasset = myasset;
+				trajectoryasset = myasset.DynamicCastTo<ParticleTrajectory>();
 				int npoints = 0;
 				std::list< ChVector<> >::const_iterator iterator;
 				std::list< ChVector<> >::const_iterator iteratorspeed;
@@ -1103,21 +1103,21 @@ int main(int argc, char* argv[])
 	ChCoordsys<> conveyor_csys = CSYSNORM;
 
 
-	ChSharedPtr<ChMarker> my_marker = mphysicalSystem.SearchMarker("conveyor_origin");
+	ChSharedPtr<ChMarker> my_marker = mphysicalSystem.SearchMarker("conveyor_origin").DynamicCastTo<ChMarker>();
 	if (my_marker.IsNull())
 		GetLog() << "Error: cannot find conveyor_origin marker from its name in the C::E system! \n";
 	else
 		conveyor_csys = my_marker->GetAbsCoord();  // fetch both pos and rotation of CAD
 		
 	
-	my_marker = mphysicalSystem.SearchMarker("particles_origin");
+	my_marker = mphysicalSystem.SearchMarker("particles_origin").DynamicCastTo<ChMarker>();
 	if (my_marker.IsNull())
 		GetLog() << "Error: cannot find particles_origin marker from its name in the C::E system! \n";
 	else
 		nozzle_csys = my_marker->GetAbsCoord();  // fetch both pos and rotation of CAD
 
 /*	
-	my_marker = mphysicalSystem.SearchMarker("centro_cilindro");
+	my_marker = mphysicalSystem.SearchMarker("centro_cilindro").DynamicCastTo<ChMarker>();
 	if (my_marker.IsNull())
 		GetLog() << "Error: cannot find centro_cilindro marker from its name in the C::E system! \n";
 	else
@@ -1125,7 +1125,7 @@ int main(int argc, char* argv[])
 */
 
 		// fetch mrigidBodyDrum pointer! will be used for changing the friction, the collision family, and later to create the motor
-	ChSharedPtr<ChBodyAuxRef> mrigidBodyDrum = mphysicalSystem.Search("Slave-1/hub_big_slave-1");  
+	ChSharedPtr<ChBodyAuxRef> mrigidBodyDrum = mphysicalSystem.Search("Slave-1/hub_big_slave-1").DynamicCastTo<ChBodyAuxRef>();  
 	if (mrigidBodyDrum.IsNull())
 		GetLog() << "ERROR: cannot find drum from its name in the C::E system! ! \n";
 	else
@@ -1411,7 +1411,7 @@ int main(int argc, char* argv[])
 								// ok, its a particle!
 
 								
-								ChSharedPtr<ElectricParticleProperty> electricproperties = myasset;
+								ChSharedPtr<ElectricParticleProperty> electricproperties = myasset.DynamicCastTo<ElectricParticleProperty>();
 								//double my_cond  = electricproperties->conductivity ;
 								ChVector<> my_ElectricForce = electricproperties->ElectricForce;
 								ChVector<> my_ElectricImageForce = electricproperties->ElectricImageForce;
