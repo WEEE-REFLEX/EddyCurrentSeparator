@@ -716,7 +716,7 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 			ChSharedPtr<ChAsset> myasset = abody->GetAssetN(na);
 			if (myasset.IsType<ElectricParticleProperty>())
 			{
-				ChSharedPtr<ElectricParticleProperty> electricproperties = myasset;
+				ChSharedPtr<ElectricParticleProperty> electricproperties = myasset.DynamicCastTo<ElectricParticleProperty>();
 				diam  = electricproperties->Cdim ;
 				sigma = electricproperties->conductivity;
 			}
