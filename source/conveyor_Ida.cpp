@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////
 //
-//   Corona Electrostatic Separator
+//   Eddy Current Separator
 //
 //   This program is based on the following
 //   libraries:
@@ -141,9 +141,10 @@ public:
 	double birthdate;
 	double chargeM;		//***ida + ale (coulomb, for plastic)
 	double chargeP;
-	ChVector<> ElectricForce;
-	ChVector<> StokesForce;
-	ChVector<> ElectricImageForce;
+	ChVector<> InducedForce;
+	ChVector<> InducedTorque;
+	ChVector<> LiftForce;
+	ChVector<> DragForce;
 	enum 
 	{
 		e_fraction_box,
@@ -701,12 +702,12 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 						int totframes)		
 {
 	
-	for (unsigned int i=0; i<msystem->Get_bodylist()->size(); i++)
+		for (unsigned int i=0; i<msystem->Get_bodylist()->size(); i++)
 	{
 		ChBody* abody = (*msystem->Get_bodylist())[i];
 
-		ChVector<> diam = VNULL; // default values, to be set few lines below...
-		double sigma;
+		bool was_a_particle = false;
+		ChSharedPtr<ElectricParticleProperty> electricproperties; // null by default
 
 		// Fetch the ElectricParticleProperty asset from the list of 
 		// assets that have been attached to the object, and retrieve the
@@ -716,13 +717,22 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 			ChSharedPtr<ChAsset> myasset = abody->GetAssetN(na);
 			if (myasset.IsType<ElectricParticleProperty>())
 			{
-				ChSharedPtr<ElectricParticleProperty> electricproperties = myasset.DynamicCastTo<ElectricParticleProperty>();
-				diam  = electricproperties->Cdim ;
-				sigma = electricproperties->conductivity;
-			}
+				// OK! THIS WAS A PARTICLE! ***ALEX
+				was_a_particle = true;	
+				electricproperties = myasset.DynamicCastTo<ElectricParticleProperty>();
+				//electricproperties = myasset;
+			} 
 		}
 
-		// Remember to reset 'user forces accumulators':
+		// Do the computation of forces only on bodies that had 
+		// the 'ElectricParticleProperty' attached.. **ALEX
+		if(was_a_particle)
+		{
+
+			ChVector<> diam = electricproperties->Cdim; 
+			double sigma =    electricproperties->conductivity;
+
+			// Remember to reset 'user forces accumulators':
 		abody->Empty_forces_accumulators();
 
 		// initialize speed of air (steady, if outside fan stream): 
@@ -835,37 +845,37 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 			CD=CDdisk;
 		}
 
-		
+	
 
-		ChVector<> DragForce;
-		DragForce.x = -CD*ro*velocity_norm_sq*CH_C_PI*diam.x*diam.y/2*cos(phi2);
-		DragForce.y = CD*ro*velocity_norm_sq*CH_C_PI*diam.x*diam.y/2*sin(phi2);
-		DragForce.z = 0;
+		ChVector<> DragForce = electricproperties->DragForce;
+		electricproperties->DragForce.x = -CD*ro*velocity_norm_sq*CH_C_PI*diam.x*diam.y/2*cos(phi2);
+		electricproperties->DragForce.y = CD*ro*velocity_norm_sq*CH_C_PI*diam.x*diam.y/2*sin(phi2);
+		electricproperties->DragForce.z = 0;
 
 		abody->Accumulate_force( DragForce, abody->GetPos(), false);
 
-		ChVector<> LiftForce;
-		LiftForce.x = CL*ro*velocity_norm_sq*CH_C_PI*diam.x*diam.y/2*sin(phi2);
-	    LiftForce.y = CL*ro*velocity_norm_sq*CH_C_PI*diam.x*diam.y/2*cos(phi2);
-		LiftForce.z = 0;	
+		ChVector<> LiftForce = electricproperties-> LiftForce;
+		electricproperties->LiftForce.x = CL*ro*velocity_norm_sq*CH_C_PI*diam.x*diam.y/2*sin(phi2);
+	    electricproperties->LiftForce.y = CL*ro*velocity_norm_sq*CH_C_PI*diam.x*diam.y/2*cos(phi2);
+		electricproperties->LiftForce.z = 0;	
 	
 		abody->Accumulate_force(LiftForce, abody->GetPos(), false);
 
-		ChVector<> InducedForce;
+		ChVector<> InducedForce = electricproperties->InducedForce;
 		/*double Induced_Fr = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*constR;
 		double Induced_Fphi = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*constI;
 		double InducedF = sqrt(pow(Induced_Fr,2)+pow(Induced_Fr,2));*/
-		InducedForce.x = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*(constR*cos(phi)+constI*sin(phi));
-		InducedForce.y = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*(constR*sin(phi)-constI*cos(phi));
-		InducedForce.z = 0;	
+		electricproperties->InducedForce.x = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*(constR*cos(phi)+constI*sin(phi));
+		electricproperties->InducedForce.y = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*(constR*sin(phi)-constI*cos(phi));
+		electricproperties->InducedForce.z = 0;	
 		abody->Accumulate_force(InducedForce, abody->GetPos(), false);
          
 
-		ChVector<> InducedTorque;
-		InducedTorque.x = 0;
-		InducedTorque.y = 0;
+		ChVector<> InducedTorque = electricproperties->InducedTorque;
+		electricproperties->InducedTorque.x = 0;
+		electricproperties->InducedTorque.y = 0;
 		//InducedTorque.z = -constTorque*pow(B,2);
-		InducedTorque.z = (-pow(B,2)*Volume*constI)/mu0;
+		electricproperties->InducedTorque.z = (-pow(B,2)*Volume*constI)/mu0;
 		abody->Accumulate_torque(InducedTorque, false);
 		
 		//coordinate del rotore. la y del rotore è la z delle coordinate del sistema
@@ -880,8 +890,8 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 
 		double posx=pos.x;
 		double posy=pos.y;
-
-	
+        
+	    }
 		
 	}
 }
@@ -1599,9 +1609,11 @@ int main(int argc, char* argv[])
 								
 								ChSharedPtr<ElectricParticleProperty> electricproperties = myasset.DynamicCastTo<ElectricParticleProperty>();
 								//double my_cond  = electricproperties->conductivity ;
-								ChVector<> my_ElectricForce = electricproperties->ElectricForce;
-								ChVector<> my_ElectricImageForce = electricproperties->ElectricImageForce;
-								ChVector<> my_StokesForce = electricproperties->StokesForce;
+								ChVector<> my_InducedForce = electricproperties->InducedForce;
+								ChVector<> my_InducedTorque = electricproperties->InducedTorque;
+								ChVector<> my_DragForce = electricproperties->DragForce;
+								ChVector<> my_LiftForce = electricproperties->LiftForce;
+								
 								double rad = ((abody->GetMass())*3)/((abody->GetDensity())*4*CH_C_PI);
 								
 								// Save on disk some infos...
@@ -1611,14 +1623,15 @@ int main(int argc, char* argv[])
 												<< abody->GetPos().z << ", "
 												<< abody->GetDensity() << ", "
 												//<< my_cond << ", "
-												<< abody->GetMass()<< ", "
-												<< pow(rad,1.0/3) << "\n";
+												//<< abody->GetMass()<< ", "
+												//<< pow(rad,1.0/3) << "\n";
                                                 //<< abody->GetPos_dt().x << ", "
 												//<< abody->GetPos_dt().y << ", "
 												//<< abody->GetPos_dt().z << ", "
-												//<< my_StokesForce << ", "
-												//<< my_ElectricImageForce << ", "
-												//<< my_ElectricForce << "\n";
+											    << my_InducedForce << ", "
+												<< my_InducedTorque << ", "
+                                                << my_DragForce <<  ", " 
+												<< my_LiftForce << "\n";
 						                       
 								               
 							}
