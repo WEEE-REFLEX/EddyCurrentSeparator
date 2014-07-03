@@ -111,10 +111,10 @@ ChCoordsys<> Spazzola_csys  ( ChVector<>(conveyor_length/2-0.10, -(drumdiameter*
 
 
 // set as true for saving log files each n frames
-bool save_dataset = false;
+bool save_dataset = true;
 bool save_irrlicht_screenshots = false;
 bool save_POV_screenshots = false;
-int saveEachNframes = 3;
+int saveEachNframes = 4;
 
 bool irr_cast_shadows = true;
 
@@ -1621,17 +1621,17 @@ int main(int argc, char* argv[])
 												<< abody->GetPos().x << ", "
 												<< abody->GetPos().y << ", "
 												<< abody->GetPos().z << ", "
-												<< abody->GetDensity() << ", "
+												<< abody->GetDensity() << "\n";
 												//<< my_cond << ", "
 												//<< abody->GetMass()<< ", "
 												//<< pow(rad,1.0/3) << "\n";
                                                 //<< abody->GetPos_dt().x << ", "
 												//<< abody->GetPos_dt().y << ", "
 												//<< abody->GetPos_dt().z << ", "
-											    << my_InducedForce << ", "
-												<< my_InducedTorque << ", "
-                                                << my_DragForce <<  ", " 
-												<< my_LiftForce << "\n";
+											    //<< my_InducedForce << ", "
+												//<< my_InducedTorque << ", "
+                                                //<< my_DragForce <<  ", " 
+												//<< my_LiftForce << "\n";
 						                       
 								               
 							}
