@@ -93,7 +93,7 @@ const double xnozzle = -conveyor_length/2+xnozzlesize/2+fence_width; //portato a
 
 const double densityMetal =  8400; // sn-pb //8900;//rame//1820 vecchia densità;
 const double densityPlastic = 946;// polipropilene //900 vecchia densità;
-int myid = 1;
+
 
 // Coordinate systems with position and rotation of important items in the 
 // simulator. These are initializad with constant values, but if loading the
@@ -399,7 +399,6 @@ void create_debris(double dt, double particles_second,
 			mrigidBody->SetMass(sphmass);
 			mrigidBody->SetInertiaXX(ChVector<>(sphinertia,sphinertia,sphinertia));
 			mrigidBody->SetFriction(0.2f);
-			mrigidBody->SetIdentifier(myid); // NB fatto solo per le sfere!!!!!!!!!
 		    mrigidBody->SetRollingFriction(0.2);
 			mrigidBody->SetSpinningFriction(0.2);
 
