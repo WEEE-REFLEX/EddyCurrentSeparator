@@ -58,12 +58,12 @@ const double drumdiameter = 0.30;
 const double eta = 0.0000181; // Air drag coefficent [N*s/m^2]
 double particles_dt;
 double debris_number = 0;
-double max_numb_particles = 1000;
+double max_numb_particles = 100;
 
 
 // conveyor constant
 const double conveyor_length=0.830; //edo from CAD 12/06 //conveyor_length=0.800;//***ALEX, from CAD
-const double conveyor_width=0.4; //***ALEX, from CAD, was 0.6
+const double conveyor_width=0.449; //***ALEX, from CAD, was 0.6
 const double conv_thick = 0.05; // non troppo sottile, altrimenti non va la collision detection! Non importa se compenetra il cilindro.
 
 const double ro=1.225;  //fluid density (air) [Kg/m^3]
@@ -1282,7 +1282,8 @@ int main(int argc, char* argv[])
 		//my_python.ImportSolidWorksSystem("../CAD_conveyor/conveyor_Ida", mphysicalSystem);  // note, don't type the .py suffix in filename..
 		//my_python.ImportSolidWorksSystem("../CAD_conveyor/prova_ida_senzacinghia", mphysicalSystem);
 		//my_python.ImportSolidWorksSystem("../CAD_conveyor/prova_edo", mphysicalSystem);
-		my_python.ImportSolidWorksSystem("../CAD_conveyor/edo_mod_1206", mphysicalSystem);
+		//my_python.ImportSolidWorksSystem("../CAD_conveyor/edo_mod_1206", mphysicalSystem);
+		my_python.ImportSolidWorksSystem("../CAD_conveyor/Edo_0707_limits", mphysicalSystem);
 	}
 	catch (ChException myerror)
 	{
@@ -1302,7 +1303,7 @@ int main(int argc, char* argv[])
 		conveyor_csys = my_marker->GetAbsCoord();  // fetch both pos and rotation of CAD
 		
 	
-	my_marker = mphysicalSystem.SearchMarker("particles_origin").DynamicCastTo<ChMarker>();
+	my_marker = mphysicalSystem.SearchMarker("Particles_origin_new").DynamicCastTo<ChMarker>();
 	if (my_marker.IsNull())
 		GetLog() << "Error: cannot find particles_origin marker from its name in the C::E system! \n";
 	else
