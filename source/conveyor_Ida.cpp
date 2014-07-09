@@ -111,7 +111,7 @@ ChCoordsys<> Spazzola_csys  ( ChVector<>(conveyor_length/2-0.10, -(drumdiameter*
 
 
 // set as true for saving log files each n frames
-bool save_dataset = true;
+bool save_dataset = false;
 bool save_irrlicht_screenshots = false;
 bool save_POV_screenshots = false;
 int saveEachNframes = 4;
@@ -399,9 +399,10 @@ void create_debris(double dt, double particles_second,
 			mrigidBody->SetMass(sphmass);
 			mrigidBody->SetInertiaXX(ChVector<>(sphinertia,sphinertia,sphinertia));
 			mrigidBody->SetFriction(0.2f);
-		    mrigidBody->SetRollingFriction(0.2);
-			mrigidBody->SetSpinningFriction(0.2);
-
+		    mrigidBody->SetRollingFriction(0.2f);
+			mrigidBody->SetNoGyroTorque(true);
+			
+			
 
 			// Define a collision shape 
 			mrigidBody->GetCollisionModel()->ClearModel();
@@ -454,6 +455,7 @@ void create_debris(double dt, double particles_second,
 			mrigidBody->SetInertiaXX(ChVector<>(sphinertia,sphinertia,sphinertia));
 			mrigidBody->SetFriction(0.4f);
 			mrigidBody->SetImpactC(0.0f); 
+			mrigidBody->SetNoGyroTorque(true);
 
 			// Define a collision shape 
 			mrigidBody->GetCollisionModel()->ClearModel();
@@ -493,7 +495,9 @@ void create_debris(double dt, double particles_second,
 			mrigidBody->SetMass(cylmass);
 			mrigidBody->SetInertiaXX(ChVector<>(cylinertia,cylinertia2,cylinertia));
 			mrigidBody->SetFriction(0.4f);
-			mrigidBody->SetImpactC(0.0f); 
+			mrigidBody->SetImpactC(0.0f);
+			mrigidBody->SetNoGyroTorque(true);
+			
 
 			// Define a collision shape 
 			mrigidBody->GetCollisionModel()->ClearModel();
