@@ -111,7 +111,7 @@ ChCoordsys<> Spazzola_csys  ( ChVector<>(conveyor_length/2-0.10, -(drumdiameter*
 
 
 // set as true for saving log files each n frames
-bool save_dataset = false;
+bool save_dataset = true;
 bool save_irrlicht_screenshots = false;
 bool save_POV_screenshots = false;
 int saveEachNframes = 4;
@@ -352,8 +352,8 @@ void create_debris(double dt, double particles_second,
 				   ChPovRay* mpov_exporter)
 {
 
-	double sph_fraction = 0.8;
-	double box_fraction = 0.2;
+	double sph_fraction = 0.7;
+	double box_fraction = 0.3;
 	double cyl_fraction = 1-box_fraction-sph_fraction;
 
 	//double sphrad = 0.6e-3 + (ChRandom()-0.5)*(0.6e-3); vecchia distribuzione
@@ -787,7 +787,7 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 			d=diam.x;
 			double csi = mu0*d*d* sigma *(drumspeed*numberofpoles+particleRspeed.z);
 			constR = 21*pow(csi,2)/(20*(1764+pow(csi,2)));
-			constI = 21*42*csi/(20*(1764+pow(csi,2)));
+			constI = 21*42*pow(csi,2)/(20*(1764+pow(csi,2)));
 			//constTorque = 1/40*pow(diam.x,2)*(4/3*CH_C_PI*pow(diam.x/2,3))* sigma*(drumspeed*numberofpoles+particleRspeed.z);
 			Volume = (4./3.)*CH_C_PI*pow(diam.x/2,3);
 			//constTorque = -pow(B,2)*4/3*CH_C_PI*pow(diam.x/2,3)*constI/mu0;
@@ -798,9 +798,12 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 		else if (shape == 2) // box (as a sphere)
 		{
 			d=diam.x;
-			double csi = mu0*pow(diam.x,2)* sigma*(drumspeed*numberofpoles+particleRspeed.z);
-			constR = 21*pow(csi,2)/20/(1764+pow(csi,2));
-			constI = 21*42*csi/(1764+pow(csi,2));
+			//double csi = mu0*pow(diam.x,2)* sigma*(drumspeed*numberofpoles+particleRspeed.z);
+			//constR = 21*pow(csi,2)/20/(1764+pow(csi,2));
+			//constI = 21*42*pow(csi,2)/(1764+pow(csi,2));
+			double csi = mu0*d*d* sigma *(drumspeed*numberofpoles+particleRspeed.z);
+			constR = 21*pow(csi,2)/(20*(1764+pow(csi,2)));
+			constI = 21*42*pow(csi,2)/(20*(1764+pow(csi,2)));
 			//constTorque = 1/40*pow(diam.x,2)*(4/3*CH_C_PI*pow(diam.x/2,3))* sigma*(drumspeed*numberofpoles+particleRspeed.z);
 			Volume = pow(diam.x,3);
 			//constTorque = -pow(B,2)*pow(diam.x,3)*constI/mu0;
@@ -864,17 +867,17 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 	
 		abody->Accumulate_force(LiftForce, abody->GetPos(), false);
 
-	
-
+	    //if (distance>0.5)
+		//{
 		ChVector<> InducedForce = electricproperties->InducedForce;
 		/*double Induced_Fr = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*constR;
 		double Induced_Fphi = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*constI;
 		double InducedF = sqrt(pow(Induced_Fr,2)+pow(Induced_Fr,2));*/
-		electricproperties->InducedForce.x = 0;//((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*(constR*cos(phi)+constI*sin(phi));
-		electricproperties->InducedForce.y = 0;//((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*(constR*sin(phi)-constI*cos(phi));
+		electricproperties->InducedForce.x = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*(constR*cos(phi)+constI*sin(phi));
+		electricproperties->InducedForce.y = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*(constR*sin(phi)-constI*cos(phi));
 		electricproperties->InducedForce.z = 0;	
 		abody->Accumulate_force(InducedForce, abody->GetPos(), false);
-         
+		//}
 
 		ChVector<> InducedTorque = electricproperties->InducedTorque;
 		electricproperties->InducedTorque.x = 0;
