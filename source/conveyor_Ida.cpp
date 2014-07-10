@@ -357,7 +357,7 @@ void create_debris(double dt, double particles_second,
 	double cyl_fraction = 1-box_fraction-sph_fraction;
 
 	//double sphrad = 0.6e-3 + (ChRandom()-0.5)*(0.6e-3); vecchia distribuzione
-	double sphrad = 0.8e-2;//3e-3; 
+	double sphrad = 0.009;//3e-3; 
 	double cylhei = 0.035;
 	double cylrad = sphrad;
 	double cylmass = CH_C_PI*pow(cylrad,2)*cylhei* 1.0;  // now with default 1.0 density
@@ -384,7 +384,7 @@ void create_debris(double dt, double particles_second,
 		double rand_shape_fract = ChRandom();
 
 		
-		ChVector<> rand_position = mnozzle_csys.TrasformLocalToParent( ChVector<>(-0.5*xnozzlesize+ChRandom()*xnozzlesize, 0, -0.5*znozzlesize+ChRandom()*znozzlesize) ) ;
+		ChVector<> rand_position = mnozzle_csys.TrasformLocalToParent( ChVector<>(-0.35*xnozzlesize+ChRandom()*xnozzlesize, 0, -0.5*znozzlesize+ChRandom()*znozzlesize) ) ;
      
 		//
 		// 1 ---- Create particle 
@@ -864,12 +864,14 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 	
 		abody->Accumulate_force(LiftForce, abody->GetPos(), false);
 
+	
+
 		ChVector<> InducedForce = electricproperties->InducedForce;
 		/*double Induced_Fr = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*constR;
 		double Induced_Fphi = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*constI;
 		double InducedF = sqrt(pow(Induced_Fr,2)+pow(Induced_Fr,2));*/
-		electricproperties->InducedForce.x = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*(constR*cos(phi)+constI*sin(phi));
-		electricproperties->InducedForce.y = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*(constR*sin(phi)-constI*cos(phi));
+		electricproperties->InducedForce.x = 0;//((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*(constR*cos(phi)+constI*sin(phi));
+		electricproperties->InducedForce.y = 0;//((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*(constR*sin(phi)-constI*cos(phi));
 		electricproperties->InducedForce.z = 0;	
 		abody->Accumulate_force(InducedForce, abody->GetPos(), false);
          
@@ -880,6 +882,7 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 		//InducedTorque.z = -constTorque*pow(B,2);
 		electricproperties->InducedTorque.z = (-pow(B,2)*Volume*constI)/mu0;
 		abody->Accumulate_torque(InducedTorque, false);
+
 		
 		//coordinate del rotore. la y del rotore è la z delle coordinate del sistema
 		ChVector<> pos = drum_csys.TrasformParentToLocal(abody->GetPos());
@@ -1267,6 +1270,7 @@ int main(int argc, char* argv[])
 
 	// Set small collision envelopes for objects that will be created from now on..
 	ChCollisionModel::SetDefaultSuggestedEnvelope(0.002); 
+	//ChCollisionModel::SetDefaultSuggestedMargin  (0.002);
 	ChCollisionModel::SetDefaultSuggestedMargin  (0.0008);
 
 
@@ -1625,7 +1629,7 @@ int main(int argc, char* argv[])
 												<< abody->GetPos().x << ", "
 												<< abody->GetPos().y << ", "
 												<< abody->GetPos().z << ", "
-												<< abody->GetDensity() << "\n";
+												<< abody->GetDensity() <<"\n";
 												//<< my_cond << ", "
 												//<< abody->GetMass()<< ", "
 												//<< pow(rad,1.0/3) << "\n";
