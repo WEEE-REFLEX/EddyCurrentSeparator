@@ -54,7 +54,7 @@ const double mu0 = 0.0000012566; //vacuum permability [Tm/A]  ****** Edo
 const double drumspeed = 261; //[rad/s]
 const double numberofpoles = 9;
 const double intensity = 0.32; 
-const double drumdiameter = 0.30;
+const double drumdiameter = 0.233; //0.30;
 const double eta = 0.0000181; // Air drag coefficent [N*s/m^2]
 double particles_dt;
 double debris_number = 0;
@@ -103,7 +103,7 @@ const double densityPlastic = 946;// polipropilene //900 vecchia densità;
 ChCoordsys<> conveyor_csys( ChVector<>(0, 0-conv_thick, 0) ) ; // default position
 //ChCoordsys<> drum_csys    ( ChVector<>(conveyor_length/2, -(drumdiameter*0.5)-conv_thick/2,0) );  // default position
 //ChCoordsys<> drum_csys    ( ChVector<>(conveyor_length, -(drumdiameter*0.5),0) );  // default position  ***Edo
-ChCoordsys<> drum_csys    ( ChVector<>(-conveyor_length/2, -(drumdiameter*0.5),0) );  // default position  ***Edo
+ChCoordsys<> drum_csys    ( ChVector<>(0,0,0) );  // default position  ***Edo
 ChCoordsys<> nozzle_csys  ( ChVector<>(xnozzle, ynozzle, 0) ); // default position
 ChCoordsys<> Splitter1_csys  ( ChVector<>(conveyor_length/2+0.2, -(drumdiameter*0.5)-conv_thick/2,0) );  // default position
 ChCoordsys<> Splitter2_csys  ( ChVector<>(conveyor_length/2+0.4, -(drumdiameter*0.5)-conv_thick/2,0) );  // default position
@@ -740,11 +740,12 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 
 		// initialize speed of air (steady, if outside fan stream): 
 		ChVector<> abs_wind(0,0,0);
-
+ 
 		// calculate the position of body COG with respect to the drum COG:
+		
 		ChVector<> mrelpos = drum_csys.TrasformParentToLocal(abody->GetPos());
-		double distx=mrelpos.x;
-		double disty=mrelpos.y;
+		double distx=(mrelpos.x-0.246771402771896);
+		double disty=(mrelpos.y+0.53927223197952);
 		ChVector<> velocity=abody->GetPos_dt();
 		double velocityx=velocity.x;
 		double velocityy=velocity.y;
@@ -1320,13 +1321,11 @@ int main(int argc, char* argv[])
 	else
 		nozzle_csys = my_marker->GetAbsCoord();  // fetch both pos and rotation of CAD
 
-/*	
-	my_marker = mphysicalSystem.SearchMarker("centro_cilindro").DynamicCastTo<ChMarker>();
+    my_marker = mphysicalSystem.SearchMarker("Center_rotor").DynamicCastTo<ChMarker>();
 	if (my_marker.IsNull())
 		GetLog() << "Error: cannot find centro_cilindro marker from its name in the C::E system! \n";
 	else
 		drum_csys = my_marker->GetAbsCoord();  // fetch both pos and rotation of CAD
-*/
 
 		// fetch mrigidBodyDrum pointer! will be used for changing the friction, the collision family, and later to create the motor
 	ChSharedPtr<ChBodyAuxRef> mrigidBodyDrum = mphysicalSystem.Search("Slave-1/hub_big_slave-1").DynamicCastTo<ChBodyAuxRef>();  
