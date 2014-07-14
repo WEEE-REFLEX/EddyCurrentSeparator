@@ -53,7 +53,7 @@ double STATIC_speed = -1; //[m/s]
 const double mu0 = 0.0000012566; //vacuum permability [Tm/A]  ****** Edo
 const double drumspeed = 261; //[rad/s]
 const double numberofpoles = 9;
-const double intensity = 0.32; 
+const double intensity = 10000;//0.32; 
 const double drumdiameter = 0.233; //0.30;
 const double eta = 0.0000181; // Air drag coefficent [N*s/m^2]
 double particles_dt;
@@ -111,7 +111,7 @@ ChCoordsys<> Spazzola_csys  ( ChVector<>(conveyor_length/2-0.10, -(drumdiameter*
 
 
 // set as true for saving log files each n frames
-bool save_dataset = true;
+bool save_dataset = false;
 bool save_irrlicht_screenshots = false;
 bool save_POV_screenshots = false;
 int saveEachNframes = 4;
@@ -352,8 +352,8 @@ void create_debris(double dt, double particles_second,
 				   ChPovRay* mpov_exporter)
 {
 
-	double sph_fraction = 0.7;
-	double box_fraction = 0.3;
+	double sph_fraction = 0;
+	double box_fraction = 1;
 	double cyl_fraction = 1-box_fraction-sph_fraction;
 
 	//double sphrad = 0.6e-3 + (ChRandom()-0.5)*(0.6e-3); vecchia distribuzione
@@ -863,7 +863,7 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 		abody->Accumulate_force( DragForce, abody->GetPos(), false);
 
 		ChVector<> LiftForce = electricproperties-> LiftForce;
-		electricproperties->LiftForce.x = CL*ro*velocity_norm_sq*CH_C_PI*diam.x*diam.y/2*sin(phi2);
+		electricproperties->LiftForce.x = -CL*ro*velocity_norm_sq*CH_C_PI*diam.x*diam.y/2*sin(phi2);
 	    electricproperties->LiftForce.y = CL*ro*velocity_norm_sq*CH_C_PI*diam.x*diam.y/2*cos(phi2);
 		electricproperties->LiftForce.z = 0;	
 	
