@@ -504,6 +504,7 @@ void create_debris(double dt, double particles_second,
 			mrigidBody->GetCollisionModel()->AddCylinder(sphrad,sphrad,cylhei);
 			mrigidBody->GetCollisionModel()->BuildModel();
 			mrigidBody->SetCollide(true);
+	
 
 			// Attach a visualization shape asset. 
 			ChSharedPtr<ChCylinderShape> mcyl(new ChCylinderShape);
@@ -840,7 +841,7 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 				//data_forces << csi << ",\t\t\t";
 			}
 		}
-		double R0=(rot_speedz*2*d)/(2*pow(velocity_norm_sq,0.5));
+		double R0=(rot_speedz*d)/(2*pow(velocity_norm_sq,0.5));
 		double CL=R0/(2.2*R0+0.7);
 	    double CLdisk=1.4*R0/(R0+1);
 		double CD=pow(0.1+2*pow(CL,2),0.5);
@@ -855,7 +856,7 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 	
 
 		ChVector<> DragForce = electricproperties->DragForce;
-		electricproperties->DragForce.x = -CD*ro*velocity_norm_sq*CH_C_PI*diam.x*diam.y/2*cos(phi2);
+		electricproperties->DragForce.x = CD*ro*velocity_norm_sq*CH_C_PI*diam.x*diam.y/2*cos(phi2);
 		electricproperties->DragForce.y = CD*ro*velocity_norm_sq*CH_C_PI*diam.x*diam.y/2*sin(phi2);
 		electricproperties->DragForce.z = 0;
 
