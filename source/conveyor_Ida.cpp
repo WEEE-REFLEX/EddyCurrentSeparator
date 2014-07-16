@@ -52,13 +52,13 @@ double STATIC_speed = -1; //[m/s]
 
 const double mu0 = 0.0000012566; //vacuum permability [Tm/A]  ****** Edo
 const double drumspeed = 261; //[rad/s]
-const double numberofpoles = 9;
-const double intensity = 10000;//0.32; 
+const double numberofpoles = 14; 
+const double intensity = 1.9;//0.32; 
 const double drumdiameter = 0.233; //0.30;
 const double eta = 0.0000181; // Air drag coefficent [N*s/m^2]
 double particles_dt;
 double debris_number = 0;
-double max_numb_particles = 100;
+double max_numb_particles = 1000;
 
 
 // conveyor constant
@@ -71,19 +71,7 @@ const double ro=1.225;  //fluid density (air) [Kg/m^3]
 // fence constant
 const double fence_width = 0.02;
 const double fence_height=0.2;
-// bin constant 
-const double y_posbin=-0.815;
-const double binbase=0.02; // base thickness of the bin
-const double bin_length=1; // accorciato da 3 a 1, ida
-const double bin_width=1.5;
-const double bin_height=0.2;
-const double n = 2; // number of bins (values from 2 to 4), a regime devo importare il cad dei 3 contenitori, ida
-// splitter constant
-const double x_splitter1=0;
-const double x_splitter2=0;
-const double x_splitter3=0;
-const double splitter_width=0.01;
-const double splitter_height=0.4;
+
 // hopper constant
 const double xnozzlesize = 0.1;//0.2;
 const double znozzlesize = 0.182; //**from CAD, nozzle width
@@ -97,7 +85,7 @@ const double densityPlastic = 946;// polipropilene //900 vecchia densità;
 
 // Coordinate systems with position and rotation of important items in the 
 // simulator. These are initializad with constant values, but if loading the
-// SolidWorks model, they will be changed accordingly to what is found in the CAD 
+// SolidWorks model, they will be changed accordingly to what is found in the CAD 	
 // file (see later, where the SolidWorks model is parsed). 
 
 ChCoordsys<> conveyor_csys( ChVector<>(0, 0-conv_thick, 0) ) ; // default position
@@ -352,8 +340,8 @@ void create_debris(double dt, double particles_second,
 				   ChPovRay* mpov_exporter)
 {
 
-	double sph_fraction = 0;
-	double box_fraction = 1;
+	double sph_fraction = 1;
+	double box_fraction = 0;
 	double cyl_fraction = 1-box_fraction-sph_fraction;
 
 	//double sphrad = 0.6e-3 + (ChRandom()-0.5)*(0.6e-3); vecchia distribuzione
@@ -744,9 +732,9 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
  
 		// calculate the position of body COG with respect to the drum COG:
 		
-		ChVector<> mrelpos = drum_csys.TrasformParentToLocal(abody->GetPos());
-		double distx=(mrelpos.x-0.246771402771896);
-		double disty=(mrelpos.y+0.53927223197952);
+		ChVector<> mrelpos = drum_csys.TrasformParentToLocal(abody->GetPos()); // da capire dove si trova il sistema d riferimento!!!!! Ida
+		double distx =(mrelpos.x - 0.246771402771896);
+		double disty =(mrelpos.y + 0.53927223197952);
 		ChVector<> velocity=abody->GetPos_dt();
 		double velocityx=velocity.x;
 		double velocityy=velocity.y;
@@ -869,17 +857,19 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 	
 		abody->Accumulate_force(LiftForce, abody->GetPos(), false);
 
-	    //if (distance>0.5)
-		//{
+        if (electricproperties->material_type == ElectricParticleProperty::e_mat_metal)
+
+			{ 
+	  
 		ChVector<> InducedForce = electricproperties->InducedForce;
 		/*double Induced_Fr = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*constR;
 		double Induced_Fphi = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*constI;
 		double InducedF = sqrt(pow(Induced_Fr,2)+pow(Induced_Fr,2));*/
-		electricproperties->InducedForce.x = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*(constR*cos(phi)+constI*sin(phi));
+		electricproperties->InducedForce.x = -((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*(constR*cos(phi)+constI*sin(phi));
 		electricproperties->InducedForce.y = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*(constR*sin(phi)-constI*cos(phi));
 		electricproperties->InducedForce.z = 0;	
 		abody->Accumulate_force(InducedForce, abody->GetPos(), false);
-		//}
+		
 
 		ChVector<> InducedTorque = electricproperties->InducedTorque;
 		electricproperties->InducedTorque.x = 0;
@@ -887,6 +877,8 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 		//InducedTorque.z = -constTorque*pow(B,2);
 		electricproperties->InducedTorque.z = (-pow(B,2)*Volume*constI)/mu0;
 		abody->Accumulate_torque(InducedTorque, false);
+		    
+		    }
 
 		
 		//coordinate del rotore. la y del rotore è la z delle coordinate del sistema
