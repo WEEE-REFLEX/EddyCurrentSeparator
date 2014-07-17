@@ -48,17 +48,16 @@ using namespace std;
 // programming practice, but enough for quick tests)
 
 double STATIC_flow = 100; 
-double STATIC_speed = -1; //[m/s]
+double STATIC_speed = - 1; //[m/s]
 
 const double mu0 = 0.0000012566; //vacuum permability [Tm/A]  ****** Edo
 const double drumspeed = 261; //[rad/s]
 const double numberofpoles = 14; 
-const double intensity = 1.9;//0.32; 
+const double intensity = 0.19;//1900 gauss,0.32; 
 const double drumdiameter = 0.233; //0.30;
-const double eta = 0.0000181; // Air drag coefficent [N*s/m^2]
 double particles_dt;
 double debris_number = 0;
-double max_numb_particles = 1000;
+double max_numb_particles = 100;
 
 
 // conveyor constant
@@ -91,7 +90,8 @@ const double densityPlastic = 946;// polipropilene //900 vecchia densità;
 ChCoordsys<> conveyor_csys( ChVector<>(0, 0-conv_thick, 0) ) ; // default position
 //ChCoordsys<> drum_csys    ( ChVector<>(conveyor_length/2, -(drumdiameter*0.5)-conv_thick/2,0) );  // default position
 //ChCoordsys<> drum_csys    ( ChVector<>(conveyor_length, -(drumdiameter*0.5),0) );  // default position  ***Edo
-ChCoordsys<> drum_csys    ( ChVector<>(0,0,0) );  // default position  ***Edo
+ChCoordsys<> drum_csys    ( ChVector<>(0,0,0) );  // default position  ***Edo  
+//ChCoordsys<> drum_csys    ( ChVector<>( - 0.246771402771896, + 0.53927223197952, 0.599465941750266) ); // CAD position (settato a mano!!! Ida)
 ChCoordsys<> nozzle_csys  ( ChVector<>(xnozzle, ynozzle, 0) ); // default position
 ChCoordsys<> Splitter1_csys  ( ChVector<>(conveyor_length/2+0.2, -(drumdiameter*0.5)-conv_thick/2,0) );  // default position
 ChCoordsys<> Splitter2_csys  ( ChVector<>(conveyor_length/2+0.4, -(drumdiameter*0.5)-conv_thick/2,0) );  // default position
@@ -99,7 +99,7 @@ ChCoordsys<> Spazzola_csys  ( ChVector<>(conveyor_length/2-0.10, -(drumdiameter*
 
 
 // set as true for saving log files each n frames
-bool save_dataset = false;
+bool save_dataset =false;
 bool save_irrlicht_screenshots = false;
 bool save_POV_screenshots = false;
 int saveEachNframes = 4;
@@ -686,7 +686,7 @@ void purge_debris(ChSystem& mysystem, double max_age = 5.0)
 // ECS forces *****Edo
 
 void apply_forces (	ChSystem* msystem,		// contains all bodies
-						ChCoordsys<>& drum_csys, // pos and rotation of drum 
+						ChCoordsys<>& mdrum_csys, // pos and rotation of drum 
 						double drumspeed,		 // speed of drum
 						double numberofpoles,	 // number of couples of poles
 						double intensity,		 // intensity of the magnetic field
@@ -732,9 +732,10 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
  
 		// calculate the position of body COG with respect to the drum COG:
 		
-		ChVector<> mrelpos = drum_csys.TrasformParentToLocal(abody->GetPos()); // da capire dove si trova il sistema d riferimento!!!!! Ida
-		double distx =(mrelpos.x - 0.246771402771896);
-		double disty =(mrelpos.y + 0.53927223197952);
+		// mdrum_csys arriva da argomento funzione
+        ChVector<> mrelpos = mdrum_csys.TrasformParentToLocal(abody->GetPos()); 
+		double distx = mrelpos.x ;
+		double disty = mrelpos.y;
 		ChVector<> velocity=abody->GetPos_dt();
 		double velocityx=velocity.x;
 		double velocityy=velocity.y;
@@ -843,57 +844,45 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 
 	
 
-		ChVector<> DragForce = electricproperties->DragForce;
-		electricproperties->DragForce.x = CD*ro*velocity_norm_sq*CH_C_PI*diam.x*diam.y/2*cos(phi2);
-		electricproperties->DragForce.y = CD*ro*velocity_norm_sq*CH_C_PI*diam.x*diam.y/2*sin(phi2);
-		electricproperties->DragForce.z = 0;
-
-		abody->Accumulate_force( DragForce, abody->GetPos(), false);
-
-		ChVector<> LiftForce = electricproperties-> LiftForce;
+		// Compute aerodynamic drag force ;
+		ChVector<> drag_dir = velocity.GetNormalized();
+		double drag_section_area = CH_C_PI *diam.x*diam.y/4;
+		electricproperties->DragForce = drag_dir * (CD * ro * pow (velocity.Length(), 2) * CH_C_PI * drag_section_area);
+		
+		abody->Accumulate_force( electricproperties->DragForce, abody->GetPos(), false);
+		
+		/*
+		// Maybe the lift force is also not needed?? 
+		// Also because 'lift' direction is not defined properly for generic shapes.
+		// Moreover, it's very likely that it is wrong as it was the previous code for computing the drag force.
 		electricproperties->LiftForce.x = -CL*ro*velocity_norm_sq*CH_C_PI*diam.x*diam.y/2*sin(phi2);
 	    electricproperties->LiftForce.y = CL*ro*velocity_norm_sq*CH_C_PI*diam.x*diam.y/2*cos(phi2);
 		electricproperties->LiftForce.z = 0;	
 	
-		abody->Accumulate_force(LiftForce, abody->GetPos(), false);
+		abody->Accumulate_force(electricproperties->LiftForce, abody->GetPos(), false);
+		*/
 
         if (electricproperties->material_type == ElectricParticleProperty::e_mat_metal)
 
 			{ 
 	  
-		ChVector<> InducedForce = electricproperties->InducedForce;
-		/*double Induced_Fr = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*constR;
-		double Induced_Fphi = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*constI;
-		double InducedF = sqrt(pow(Induced_Fr,2)+pow(Induced_Fr,2));*/
-		electricproperties->InducedForce.x = -((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*(constR*cos(phi)+constI*sin(phi));
-		electricproperties->InducedForce.y = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*(constR*sin(phi)-constI*cos(phi));
-		electricproperties->InducedForce.z = 0;	
-		abody->Accumulate_force(InducedForce, abody->GetPos(), false);
-		
+				/*double Induced_Fr = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*constR;
+				double Induced_Fphi = ((numberofpoles+1)*pow(B,2)*Volume/mu0/distance)*constI;
+				double InducedF = sqrt(pow(Induced_Fr,2)+pow(Induced_Fr,2));*/
+				electricproperties->InducedForce.x = -((numberofpoles+1)*pow(B,2)*Volume/(mu0*distance))*(constR*cos(phi)+constI*sin(phi));
+				electricproperties->InducedForce.y = ((numberofpoles+1)*pow(B,2)*Volume/(mu0*distance))*(constR*sin(phi)-constI*cos(phi));
+				electricproperties->InducedForce.z = 0;	
+				abody->Accumulate_force(electricproperties->InducedForce, abody->GetPos(), false);				
+ 
+				electricproperties->InducedTorque.x = 0;
+				electricproperties->InducedTorque.y = 0;
+				//InducedTorque.z = -constTorque*pow(B,2);
+				electricproperties->InducedTorque.z = (-pow(B,2)*Volume*constI)/mu0;
+				abody->Accumulate_torque(electricproperties->InducedTorque, false);
 
-		ChVector<> InducedTorque = electricproperties->InducedTorque;
-		electricproperties->InducedTorque.x = 0;
-		electricproperties->InducedTorque.y = 0;
-		//InducedTorque.z = -constTorque*pow(B,2);
-		electricproperties->InducedTorque.z = (-pow(B,2)*Volume*constI)/mu0;
-		abody->Accumulate_torque(InducedTorque, false);
-		    
 		    }
 
-		
-		//coordinate del rotore. la y del rotore è la z delle coordinate del sistema
-		ChVector<> pos = drum_csys.TrasformParentToLocal(abody->GetPos());
-		ChVector<> acc_force=abody->Get_accumulated_force();
-		ChVector<> acc_torque=abody->Get_accumulated_torque();
-		
-		ChVector<> iner=abody->GetInertiaXX();
-		double ingxx = iner.x;
-		double ingyy = iner.y;
-		double ingzz = iner.z;
 
-		double posx=pos.x;
-		double posy=pos.y;
-        
 	    }
 		
 	}
@@ -947,6 +936,7 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 		{
 
 			ChVector<> diam = electricproperties->Cdim; 
+
 			double sigma =    electricproperties->conductivity;
 
 			// Remember to reset 'user forces accumulators':
@@ -1314,11 +1304,16 @@ int main(int argc, char* argv[])
 	else
 		nozzle_csys = my_marker->GetAbsCoord();  // fetch both pos and rotation of CAD
 
-    my_marker = mphysicalSystem.SearchMarker("Center_rotor").DynamicCastTo<ChMarker>();
+    my_marker = mphysicalSystem.SearchMarker("conveyor_origin").DynamicCastTo<ChMarker>();
 	if (my_marker.IsNull())
-		GetLog() << "Error: cannot find centro_cilindro marker from its name in the C::E system! \n";
+		GetLog() << "Error: cannot find conveyor_origin marker from its name in the C::E system! \n"; 
 	else
 		drum_csys = my_marker->GetAbsCoord();  // fetch both pos and rotation of CAD
+
+	// ***TO DO***: remove the following line when the conveyor_origin marker will be moved in correct position in CAD model...  ***Ida
+	drum_csys  = ChCoordsys<> ( ChVector<>( - 0.246771402771896, + 0.53927223197952, 0.599465941750266) ); 
+
+	GetLog() << " \n\n CONVEYOR ORIGIN CSYS: \n" << drum_csys << "\n\n"; // just for debug...
 
 		// fetch mrigidBodyDrum pointer! will be used for changing the friction, the collision family, and later to create the motor
 	ChSharedPtr<ChBodyAuxRef> mrigidBodyDrum = mphysicalSystem.Search("Slave-1/hub_big_slave-1").DynamicCastTo<ChBodyAuxRef>();  
@@ -1634,7 +1629,7 @@ int main(int argc, char* argv[])
 											    //<< my_InducedForce << ", "
 												//<< my_InducedTorque << ", "
                                                 //<< my_DragForce <<  ", " 
-												//<< my_LiftForce << "\n";
+											    //<< my_LiftForce << "\n";
 						                       
 								               
 							}
