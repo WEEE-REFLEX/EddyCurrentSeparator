@@ -340,8 +340,8 @@ void create_debris(double dt, double particles_second,
 				   ChPovRay* mpov_exporter)
 {
 
-	double sph_fraction = 1;
-	double box_fraction = 0;
+	double sph_fraction = 0;
+	double box_fraction = 1;
 	double cyl_fraction = 1-box_fraction-sph_fraction;
 
 	//double sphrad = 0.6e-3 + (ChRandom()-0.5)*(0.6e-3); vecchia distribuzione
@@ -1278,7 +1278,8 @@ int main(int argc, char* argv[])
 		//my_python.ImportSolidWorksSystem("../CAD_conveyor/prova_ida_senzacinghia", mphysicalSystem);
 		//my_python.ImportSolidWorksSystem("../CAD_conveyor/prova_edo", mphysicalSystem);
 		//my_python.ImportSolidWorksSystem("../CAD_conveyor/edo_mod_1206", mphysicalSystem);
-		my_python.ImportSolidWorksSystem("../CAD_conveyor/Edo_0707_limits", mphysicalSystem);
+		//my_python.ImportSolidWorksSystem("../CAD_conveyor/Edo_0707_limits", mphysicalSystem);
+		my_python.ImportSolidWorksSystem("../CAD_conveyor/Edo_1707_bigbox", mphysicalSystem);
 	}
 	catch (ChException myerror)
 	{
