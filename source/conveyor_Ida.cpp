@@ -99,7 +99,7 @@ ChCoordsys<> Spazzola_csys  ( ChVector<>(conveyor_length/2-0.10, -(drumdiameter*
 
 
 // set as true for saving log files each n frames
-bool save_dataset =false;
+bool save_dataset =true;
 bool save_irrlicht_screenshots = false;
 bool save_POV_screenshots = false;
 int saveEachNframes = 4;
@@ -340,8 +340,8 @@ void create_debris(double dt, double particles_second,
 				   ChPovRay* mpov_exporter)
 {
 
-	double sph_fraction = 0;
-	double box_fraction = 1;
+	double sph_fraction = 1;
+	double box_fraction = 0;
 	double cyl_fraction = 1-box_fraction-sph_fraction;
 
 	//double sphrad = 0.6e-3 + (ChRandom()-0.5)*(0.6e-3); vecchia distribuzione
