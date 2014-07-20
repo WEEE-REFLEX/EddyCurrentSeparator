@@ -31,7 +31,8 @@
 // Use the namespace of Chrono
 
 using namespace chrono;
-using namespace postprocess;
+using namespace chrono::postprocess;
+using namespace chrono::collision;
 
 // Use the main namespaces of Irrlicht
 using namespace irr;
