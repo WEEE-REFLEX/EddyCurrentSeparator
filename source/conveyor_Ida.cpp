@@ -12,14 +12,13 @@
 ///////////////////////////////////////////////////
  
     
-#include "physics/CHapidll.h" 
 #include "physics/CHsystem.h"
 #include "physics/CHconveyor.h"
 #include "physics/CHbodyAuxRef.h"
 #include "core/ChFileutils.h"
-#include "irrlicht_interface/CHbodySceneNode.h"
-#include "irrlicht_interface/CHbodySceneNodeTools.h" 
-#include "irrlicht_interface/CHirrApp.h"
+#include "unit_IRRLICHT/CHbodySceneNode.h"
+#include "unit_IRRLICHT/CHbodySceneNodeTools.h" 
+#include "unit_IRRLICHT/CHirrApp.h"
 #include "core/ChRealtimeStep.h"
 #include "core/ChMath.h"
 #include "core/ChDistribution.h"
@@ -325,7 +324,7 @@ ChSharedPtr<ChBody> create_box_collision_shape(ChVector<> pos, //  center of box
 
 	// Attach a visualization shape asset. 
 	ChSharedPtr<ChBoxShape> mbox(new ChBoxShape);
-	mbox->GetBoxGeometry().SetLenghts(size);
+	mbox->GetBoxGeometry().SetLengths(size);
 	mrigidBody->AddAsset(mbox);
 
 	return mrigidBody;
@@ -373,7 +372,7 @@ void create_debris(double dt, double particles_second,
 		double rand_shape_fract = ChRandom();
 
 		
-		ChVector<> rand_position = mnozzle_csys.TrasformLocalToParent( ChVector<>(-0.35*xnozzlesize+ChRandom()*xnozzlesize, 0, -0.5*znozzlesize+ChRandom()*znozzlesize) ) ;
+		ChVector<> rand_position = mnozzle_csys.TransformLocalToParent( ChVector<>(-0.35*xnozzlesize+ChRandom()*xnozzlesize, 0, -0.5*znozzlesize+ChRandom()*znozzlesize) ) ;
      
 		//
 		// 1 ---- Create particle 
@@ -454,7 +453,7 @@ void create_debris(double dt, double particles_second,
 
 			// Attach a visualization shape asset. 
 			ChSharedPtr<ChBoxShape> mbox(new ChBoxShape);
-			mbox->GetBoxGeometry().SetLenghts(ChVector<>(sphrad*2*xscale, sphrad*2*yscale, sphrad*2*yscale) * particle_magnification);
+			mbox->GetBoxGeometry().SetLengths(ChVector<>(sphrad*2*xscale, sphrad*2*yscale, sphrad*2*yscale) * particle_magnification);
 			mrigidBody->AddAsset(mbox);
 
 			// Attach a custom asset. Look how to create and add a custom asset to the object! ***ALEX
@@ -734,7 +733,7 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 		// calculate the position of body COG with respect to the drum COG:
 		
 		// mdrum_csys arriva da argomento funzione
-        ChVector<> mrelpos = mdrum_csys.TrasformParentToLocal(abody->GetPos()); 
+        ChVector<> mrelpos = mdrum_csys.TransformParentToLocal(abody->GetPos()); 
 		double distx = mrelpos.x ;
 		double disty = mrelpos.y;
 		ChVector<> velocity=abody->GetPos_dt();
@@ -1227,16 +1226,13 @@ void DrawTrajectories(ChIrrApp& application)
 
 int main(int argc, char* argv[])
 {
-	// In CHRONO engine, The DLL_CreateGlobals() - DLL_DeleteGlobals(); pair is needed if
-	// global functions are needed. 
-	DLL_CreateGlobals();
-
 	// Create a ChronoENGINE physical system
 	ChSystem mphysicalSystem;
 
 	// From now on, functions in ChParticlesSceneNodeTools will find 3d .obj models 
 	// in "../objects/", instead of default "../data/" dir:
-	irrlicht_default_obj_dir = "../objects/";
+	SetChronoDataPath("../objects/");
+	//irrlicht_default_obj_dir = "../objects/";
 
 	// Create the Irrlicht visualization (open the Irrlicht device, 
 	// bind a simple user interface, etc. etc.)
@@ -1369,7 +1365,7 @@ int main(int argc, char* argv[])
 	// Attach a visualization shape asset (optional). // Not needed - already in .obj meshes from SW
 	
 	ChSharedPtr<ChBoxShape> mbox(new ChBoxShape);
-	mbox->GetBoxGeometry().SetLenghts(ChVector<>(conveyor_length,conv_thick, conveyor_width));
+	mbox->GetBoxGeometry().SetLengths(ChVector<>(conveyor_length,conv_thick, conveyor_width));
 	mconveyor->AddAsset(mbox);
 	
 
@@ -1673,10 +1669,6 @@ int main(int argc, char* argv[])
 
 	
 
- 
-	// Remember this at the end of the program, if you started
-	// with DLL_CreateGlobals();
-	DLL_DeleteGlobals();
 
 	return 0;
 }
