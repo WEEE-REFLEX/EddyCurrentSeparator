@@ -47,7 +47,7 @@ using namespace std;
 // Static values valid through the entire program (bad
 // programming practice, but enough for quick tests)
 
-double STATIC_flow = 100; 
+double STATIC_flow = 500; 
 double STATIC_speed = - 1; //[m/s]
 
 const double mu0 = 0.0000012566; //vacuum permability [Tm/A]  ****** Edo
@@ -57,7 +57,7 @@ const double intensity = 0.19;//1900 gauss,0.32;
 const double drumdiameter = 0.233; //0.30;
 double particles_dt;
 double debris_number = 0;
-double max_numb_particles = 100;
+double max_numb_particles = 10000;
 
 
 // conveyor constant
@@ -99,10 +99,10 @@ ChCoordsys<> Spazzola_csys  ( ChVector<>(conveyor_length/2-0.10, -(drumdiameter*
 
 
 // set as true for saving log files each n frames
-bool save_dataset =true;
-bool save_irrlicht_screenshots = false;
+bool save_dataset =false;
+bool save_irrlicht_screenshots =false;
 bool save_POV_screenshots = false;
-int saveEachNframes = 4;
+int saveEachNframes = 8;
 
 bool irr_cast_shadows = true;
 
@@ -218,7 +218,7 @@ public:
 
 				// ..add GUI checkmark to enable plotting forces
 				checkbox_plotforces = application->GetIGUIEnvironment()->addCheckBox(false,core::rect<s32>(560,65, 560+150,65+20),
-								0, 105, L"Plot applied CES forces");
+								0, 105, L"Plot applied ECS forces");
 
 				// ..add GUI checkmark to enable plotting forces
 				checkbox_plottrajectories = application->GetIGUIEnvironment()->addCheckBox(false,core::rect<s32>(560,90, 560+150,90+20),
@@ -340,13 +340,13 @@ void create_debris(double dt, double particles_second,
 				   ChPovRay* mpov_exporter)
 {
 
-	double sph_fraction = 1;
+	double sph_fraction = 0.5;
 	double box_fraction = 0;
 	double cyl_fraction = 1-box_fraction-sph_fraction;
 
 	//double sphrad = 0.6e-3 + (ChRandom()-0.5)*(0.6e-3); vecchia distribuzione
-	double sphrad = 0.009;//3e-3; 
-	double cylhei = 0.035;
+	double sphrad = 0.004;//3e-3; 
+	double cylhei = 0.003;
 	double cylrad = sphrad;
 	double cylmass = CH_C_PI*pow(cylrad,2)*cylhei* 1.0;  // now with default 1.0 density
 	double sphmass = (4./3.)*CH_C_PI*pow(sphrad,3)* 1.0; // now with default 1.0 density
@@ -1239,10 +1239,10 @@ int main(int argc, char* argv[])
 	ChIrrApp application(&mphysicalSystem, L"Conveyor belt",core::dimension2d<u32>(800,600),false);
 
 	// Easy shortcuts to add camera, lights, logo and sky in Irrlicht scene:
-	//application.AddTypicalLogo("../objects/");
+	application.AddTypicalLogo("../objects/");
 	application.AddTypicalSky("../objects/skybox/");
 	application.AddTypicalLights();
-	application.AddTypicalCamera(core::vector3df(1.5f,0.4f,-1.0f), core::vector3df(0.5f,0.f,0.f));
+	application.AddTypicalCamera(core::vector3df(-1.2f,1.5f,-1.0f), core::vector3df(0.0f,0.f,0.f));
 	if (irr_cast_shadows)
 		application.AddLightWithShadow(vector3df(-4.5f,5.5f,4.5f), vector3df(0.f,0.f,0.f), 10, 1.2,10.2, 30,512, video::SColorf(1.f,0.9f,0.9f));
 
@@ -1427,9 +1427,10 @@ int main(int argc, char* argv[])
 		pov_exporter.SetPictureFilebase("animPOV/picture");
 
 				// optional: modify the POV default light
-		pov_exporter.SetLight(ChVector<>(1.5f,4.4f,-1.0f), ChColor(0.1f,0.1f,0.1f), false);
+		pov_exporter.SetLight(ChVector<>(1.5f,4.4f,-1.0f), ChColor(1.5f,1.5f,1.5f), false);
 
-		pov_exporter.SetCamera(ChVector<>(1.5f,0.8f,-1.0f),ChVector<>(0.5f,0.f,0.f),60,false);
+		//pov_exporter.SetCamera(ChVector<>(1.9f,2.9f,-1.4f),ChVector<>(0.5f,0.f,0.f),60,false);
+		pov_exporter.SetCamera(ChVector<>(-1.2f,2.8f,1.4f),ChVector<>(0.5f,0.f,0.f),60,false);
 
 				// optional: use SetCustomPOVcommandsScript() to add further POV commands,
 				// ex. create an additional light, and an additional grid, etc. 
