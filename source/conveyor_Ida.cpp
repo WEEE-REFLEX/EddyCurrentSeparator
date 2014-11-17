@@ -47,17 +47,17 @@ using namespace std;
 // Static values valid through the entire program (bad
 // programming practice, but enough for quick tests)
 
-double STATIC_flow = 500; 
-double STATIC_speed = - 1; //[m/s]
+double STATIC_flow = 1; 
+double STATIC_speed = -1.87; // Articolo //- 1; //[m/s]
 
-const double mu0 = 0.0000012566; //vacuum permability [Tm/A]  ****** Edo
-const double drumspeed = 261; //[rad/s]
-const double numberofpoles = 14; 
-const double intensity = 0.19;//1900 gauss,0.32; 
-const double drumdiameter = 0.233; //0.30;
+double mu0 = 0.0000012566; //vacuum permability [Tm/A]  ****** Edo
+double drumspeed = 397.5; // articolo //261; //[rad/s]
+double numberofpoles = 9; // articolo
+double intensity = 0.32;// articolo //0.19;//1900 gauss
+double drumdiameter = 0.233; //0.30;
 double particles_dt;
 double debris_number = 0;
-double max_numb_particles = 10000;
+double max_numb_particles = 1;
 
 
 // conveyor constant
@@ -78,7 +78,7 @@ const double ynozzlesize = 0.1;//0.5;
 const double ynozzle = 0.01;
 const double xnozzle = -conveyor_length/2+xnozzlesize/2+fence_width; //portato avanti****ida
 
-const double densityMetal =  8400; // sn-pb //8900;//rame//1820 vecchia densità;
+const double densityMetal =  1738;// Mg//2700; //Al (Articolo)//8400; // sn-pb //8900;//rame//1820 vecchia densità;
 const double densityPlastic = 946;// polipropilene //900 vecchia densità;
 
 
@@ -99,7 +99,7 @@ ChCoordsys<> Spazzola_csys  ( ChVector<>(conveyor_length/2-0.10, -(drumdiameter*
 
 
 // set as true for saving log files each n frames
-bool save_dataset =false;
+bool save_dataset =true;
 bool save_irrlicht_screenshots =false;
 bool save_POV_screenshots = false;
 int saveEachNframes = 8;
@@ -340,13 +340,13 @@ void create_debris(double dt, double particles_second,
 				   ChPovRay* mpov_exporter)
 {
 
-	double sph_fraction = 0.5;
+	double sph_fraction = 0;
 	double box_fraction = 0;
 	double cyl_fraction = 1-box_fraction-sph_fraction;
 
 	//double sphrad = 0.6e-3 + (ChRandom()-0.5)*(0.6e-3); vecchia distribuzione
-	double sphrad = 0.004;//3e-3; 
-	double cylhei = 0.003;
+	double sphrad = 0.014;//3e-3; 
+	double cylhei = 0.007;
 	double cylrad = sphrad;
 	double cylmass = CH_C_PI*pow(cylrad,2)*cylhei* 1.0;  // now with default 1.0 density
 	double sphmass = (4./3.)*CH_C_PI*pow(sphrad,3)* 1.0; // now with default 1.0 density
@@ -528,7 +528,7 @@ void create_debris(double dt, double particles_second,
 			  
 			double rand_mat = ChRandom();
 
-			double plastic_fract = 0.5;
+			double plastic_fract = 0;
 				
 			if (rand_mat < plastic_fract)
 			{
@@ -548,7 +548,7 @@ void create_debris(double dt, double particles_second,
 			} 
 			if (rand_mat > plastic_fract)
 			{
-				created_electrical_asset->conductivity = 6428000;//6670000 conducibilità vecchia;
+				created_electrical_asset->conductivity = 22000000; //38000000; //6428000;//6670000 conducibilità vecchia;
 				created_electrical_asset->material_type = ElectricParticleProperty::e_mat_metal;
 
 				// Attach a 'blue' texture to easily recognize metal stuff in 3d view
@@ -771,6 +771,7 @@ void apply_forces (	ChSystem* msystem,		// contains all bodies
 		double constI;
 		//double constTorque;
 		double Volume,d;
+		
 
 		
 		if (shape == 0) //sphere
@@ -1480,7 +1481,7 @@ int main(int argc, char* argv[])
 	application.GetSystem()->SetIntegrationType(ChSystem::INT_ANITESCU);
 	application.GetSystem()->SetLcpSolverType(ChSystem::LCP_ITERATIVE_SOR_MULTITHREAD); // or ChSystem::LCP_ITERATIVE_BARZILAIBORWEIN for max precision
 		// important! dt is small, and particles are small, so it's better to keep this small...
-	application.GetSystem()->SetMaxPenetrationRecoverySpeed(0.15);// not needed in INT_TASORA, only for INT_ANITESCU
+	application.GetSystem()->SetMaxPenetrationRecoverySpeed(0.55);// not needed in INT_TASORA, only for INT_ANITESCU
 	application.GetSystem()->SetMinBounceSpeed(0.01);
 
 	application.GetSystem()->Set_G_acc(ChVector<>(0, -9.81, 0));
