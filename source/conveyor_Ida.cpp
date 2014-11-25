@@ -345,8 +345,8 @@ void create_debris(double dt, double particles_second,
 	double cyl_fraction = 1-box_fraction-sph_fraction;
 
 	//double sphrad = 0.6e-3 + (ChRandom()-0.5)*(0.6e-3); vecchia distribuzione
-	double sphrad = 0.014;//3e-3; 
-	double cylhei = 0.007;
+	double sphrad = 0.018;//3e-3; 
+	double cylhei = 0.005;
 	double cylrad = sphrad;
 	double cylmass = CH_C_PI*pow(cylrad,2)*cylhei* 1.0;  // now with default 1.0 density
 	double sphmass = (4./3.)*CH_C_PI*pow(sphrad,3)* 1.0; // now with default 1.0 density
@@ -1476,12 +1476,12 @@ int main(int argc, char* argv[])
 	//
 	
 	application.SetStepManage(true);
-	application.SetTimestep(0.001);
+	application.SetTimestep(0.0005);
 	
 	application.GetSystem()->SetIntegrationType(ChSystem::INT_ANITESCU);
 	application.GetSystem()->SetLcpSolverType(ChSystem::LCP_ITERATIVE_SOR_MULTITHREAD); // or ChSystem::LCP_ITERATIVE_BARZILAIBORWEIN for max precision
 		// important! dt is small, and particles are small, so it's better to keep this small...
-	application.GetSystem()->SetMaxPenetrationRecoverySpeed(0.55);// not needed in INT_TASORA, only for INT_ANITESCU
+	application.GetSystem()->SetMaxPenetrationRecoverySpeed(0.2);// not needed in INT_TASORA, only for INT_ANITESCU
 	application.GetSystem()->SetMinBounceSpeed(0.01);
 
 	application.GetSystem()->Set_G_acc(ChVector<>(0, -9.81, 0));
