@@ -1481,7 +1481,7 @@ int main(int argc, char* argv[])
 	application.GetSystem()->SetIntegrationType(ChSystem::INT_ANITESCU);
 	application.GetSystem()->SetLcpSolverType(ChSystem::LCP_ITERATIVE_SOR_MULTITHREAD); // or ChSystem::LCP_ITERATIVE_BARZILAIBORWEIN for max precision
 		// important! dt is small, and particles are small, so it's better to keep this small...
-	application.GetSystem()->SetMaxPenetrationRecoverySpeed(0.2);// not needed in INT_TASORA, only for INT_ANITESCU
+	application.GetSystem()->SetMaxPenetrationRecoverySpeed(0.4);// not needed in INT_TASORA, only for INT_ANITESCU
 	application.GetSystem()->SetMinBounceSpeed(0.01);
 
 	application.GetSystem()->Set_G_acc(ChVector<>(0, -9.81, 0));
