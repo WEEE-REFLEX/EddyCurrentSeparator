@@ -575,6 +575,8 @@ void create_debris(double dt, double particles_second,
 		// 3 ---- Set parameters that are common for whatever created particle, ex. limit speed threshold:
 		//
 
+		created_body->GetCollisionModel()->SetFamily(2);
+
 		// This is an optional hack that largely affects the stability of the
 		// simulation. 
 		// In fact, if particles happen to spin too fast, the collision detection
@@ -1327,8 +1329,8 @@ int main(int argc, char* argv[])
 		GetLog() << "ERROR: cannot find drum from its name in the C::E system! ! \n";
 	else
 	{
-		mrigidBodyDrum->GetCollisionModel()->SetFamily(7);
-		mrigidBodyDrum->GetCollisionModel()->SetFamilyMaskNoCollisionWithFamily(8);
+		mrigidBodyDrum->GetCollisionModel()->SetFamily(4);
+		mrigidBodyDrum->GetCollisionModel()->SetFamilyMaskNoCollisionWithFamily(5);
 		mrigidBodyDrum->SetFriction(0.2f); 
 		//mrigidBodyDrum->SetImpactC(0.0f);
 		//mrigidBodyDrum->SetRollingFriction(0.2f);
@@ -1365,10 +1367,15 @@ int main(int argc, char* argv[])
 	mconveyor->SetPos( conveyor_csys.pos ); // mconveyor->SetCoord ( conveyor_csys );
 	mconveyor->ConcatenatePreTransformation(ChFrameMoving<>(ChVector<>(0, -conv_thick/2., 0))); // cut if csys already in the middle 
 
-	//mconveyor->GetPlate()->GetCollisionModel()->SetFamily(8); // note the additional  ->GetPlate()
-	mconveyor->GetPlate()->GetCollisionModel()->SetFamilyMaskNoCollisionWithFamily(7); 
-
 	mphysicalSystem.Add(mconveyor);
+
+	// Define collision mask. 
+	// Looks like it must be done after the mphysicalSystem.Add() 
+	// We do not want the ChConveyor to interact with other collision shapes from CAD, that have family=0 by default.
+	// Particles, instead has family=3 (see above).
+	mconveyor->GetPlate()->GetCollisionModel()->SetFamily(5); // note the additional  ->GetPlate()
+	mconveyor->GetPlate()->GetCollisionModel()->SetFamilyMaskNoCollisionWithFamily(4);	// No collision with c++ drum
+	mconveyor->GetPlate()->GetCollisionModel()->SetFamilyMaskNoCollisionWithFamily(0);	// No collision with CAD shapes
 
 	// Attach a visualization shape asset (optional). // Not needed - already in .obj meshes from SW
 	
