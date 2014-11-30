@@ -22,6 +22,7 @@
 #include "core/ChRealtimeStep.h"
 #include "core/ChMath.h"
 #include "core/ChDistribution.h"
+#include "collision/ChCCollisionSystemBullet.h"
 #include <irrlicht.h>
 #include <fstream>
 #include "unit_PYTHON/ChPython.h"
@@ -1227,6 +1228,12 @@ void DrawTrajectories(ChIrrApp& application)
 
 int main(int argc, char* argv[])
 {
+	// Set small collision envelopes for objects that will be created from now on..
+	ChCollisionModel::SetDefaultSuggestedEnvelope(0.001);  //0.002
+	ChCollisionModel::SetDefaultSuggestedMargin(0.0005); //0.0008
+	// Set contact breaking/merging tolerance of Bullet:
+	ChCollisionSystemBullet::SetContactBreakingThreshold(0.001);
+
 	// Create a ChronoENGINE physical system
 	ChSystem mphysicalSystem;
 
