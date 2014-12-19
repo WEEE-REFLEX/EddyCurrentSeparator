@@ -48,14 +48,14 @@ using namespace std;
 // Static values valid through the entire program (bad
 // programming practice, but enough for quick tests)
 
-double STATIC_flow = 1; 
+double STATIC_flow = 100; 
 double STATIC_speed = -1.87; // Articolo //- 1; //[m/s]
 
 double mu0 = 0.0000012566; //vacuum permability [Tm/A]  ****** Edo
-double drumspeed = 397.5; // articolo //261; //[rad/s]
+double drumspeed = 261; // articolo //261; //[rad/s]
 double numberofpoles = 9; // articolo
 double intensity = 0.32;// articolo //0.19;//1900 gauss
-double drumdiameter = 0.233; //0.30;
+double drumdiameter = 0.30; // articolo, il nostro in lab è 0.233;
 double particles_dt;
 double debris_number = 0;
 double max_numb_particles = 1;
@@ -79,7 +79,7 @@ const double ynozzlesize = 0.1;//0.5;
 const double ynozzle = 0.01;
 const double xnozzle = -conveyor_length/2+xnozzlesize/2+fence_width; //portato avanti****ida
 
-const double densityMetal =  1738;// Mg//2700; //Al (Articolo)//8400; // sn-pb //8900;//rame//1820 vecchia densità;
+const double densityMetal = 2700; //Al //1820;// Mg// (Articolo)//8400; // sn-pb //8900;//rame// 
 const double densityPlastic = 946;// polipropilene //900 vecchia densità;
 
 
@@ -346,8 +346,8 @@ void create_debris(double dt, double particles_second,
 	double cyl_fraction = 1-box_fraction-sph_fraction;
 
 	//double sphrad = 0.6e-3 + (ChRandom()-0.5)*(0.6e-3); vecchia distribuzione
-	double sphrad = 0.018;//3e-3; 
-	double cylhei = 0.005;
+	double sphrad = 0.005;//3e-3; 
+	double cylhei = 0.047;
 	double cylrad = sphrad;
 	double cylmass = CH_C_PI*pow(cylrad,2)*cylhei* 1.0;  // now with default 1.0 density
 	double sphmass = (4./3.)*CH_C_PI*pow(sphrad,3)* 1.0; // now with default 1.0 density
@@ -549,7 +549,7 @@ void create_debris(double dt, double particles_second,
 			} 
 			if (rand_mat > plastic_fract)
 			{
-				created_electrical_asset->conductivity = 22000000; //38000000; //6428000;//6670000 conducibilità vecchia;
+				created_electrical_asset->conductivity = 16200000;//6670000; //38000000; //6428000;//6670000 conducibilità vecchia;
 				created_electrical_asset->material_type = ElectricParticleProperty::e_mat_metal;
 
 				// Attach a 'blue' texture to easily recognize metal stuff in 3d view
@@ -1285,7 +1285,7 @@ int main(int argc, char* argv[])
 		//my_python.ImportSolidWorksSystem("../CAD_conveyor/prova_ida_senzacinghia", mphysicalSystem);
 		//my_python.ImportSolidWorksSystem("../CAD_conveyor/prova_edo", mphysicalSystem);
 		//my_python.ImportSolidWorksSystem("../CAD_conveyor/edo_mod_1206", mphysicalSystem);
-		my_python.ImportSolidWorksSystem("../CAD_conveyor/Edo_0707_limits", mphysicalSystem);
+		my_python.ImportSolidWorksSystem("../CAD_conveyor/NewCad", mphysicalSystem);
 		//my_python.ImportSolidWorksSystem("../CAD_conveyor/Edo_1707_bigbox", mphysicalSystem);
 	}
 	catch (ChException myerror)
@@ -1316,11 +1316,12 @@ int main(int argc, char* argv[])
 	if (my_marker.IsNull())
 		GetLog() << "Error: cannot find conveyor_origin marker from its name in the C::E system! \n"; 
 	else
-		drum_csys = my_marker->GetAbsCoord();  // fetch both pos and rotation of CAD
+		drum_csys = my_marker->GetAbsCoord(); // fetch both pos and rotation of CAD
 
 	// ***TO DO***: remove the following line when the conveyor_origin marker will be moved in correct position in CAD model...  ***Ida
-	drum_csys  = ChCoordsys<> ( ChVector<>( - 0.246771402771896, + 0.53927223197952, 0.599465941750266) ); 
-
+	//drum_csys  = ChCoordsys<> ( ChVector<>( - 0.246771402771896, + 0.53927223197952, 0.599465941750266) ); 
+    //drum_csys  = ChCoordsys<> ( ChVector<>( - 0.24671867358931, + 0.500307638740566, 0.599465941750266) );
+	drum_csys  = ChCoordsys<> ( ChVector<>( - 0.24671867358931, + 0.500307638740566, 0.050965941750342) );
 	GetLog() << " \n\n CONVEYOR ORIGIN CSYS: \n" << drum_csys << "\n\n"; // just for debug...
 
 		// fetch mrigidBodyDrum pointer! will be used for changing the friction, the collision family, and later to create the motor
