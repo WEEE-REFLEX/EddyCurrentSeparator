@@ -52,13 +52,13 @@ double STATIC_flow = 100;
 double STATIC_speed = -0.7; // Experiments //-1.87; // Articolo //- 1; //[m/s]
 
 double mu0 = 0.0000012566; //vacuum permability [Tm/A]  ****** Edo
-double drumspeed = 53.72; //10% of rotor speed // article 261; //[rad/s]
+double drumspeed = 0.3*547.83;// % of rotor speed // article 261; //[rad/s]
 double numberofpoles = 14;//Check this value // article 9
 double intensity = 0.19;//0.32;// article //0.19;//1900 gauss
 double drumdiameter = 0.233; //0.30; // article, lab è 0.233;
 double particles_dt;
 double debris_number = 0;
-double max_numb_particles = 1;
+double max_numb_particles = 0;//9;
 
 
 // conveyor constant
@@ -80,7 +80,7 @@ const double ynozzle = 0.01;
 const double xnozzle = -conveyor_length/2+xnozzlesize/2+fence_width; //portato avanti****ida
 
 const double densityMetal = 2700; //Al //1820;// Mg// (Articolo)//8400; // sn-pb //8900;//rame// 
-const double densityPlastic = 946;// polipropilene //900 vecchia densità;
+const double densityPlastic = 250; //cork //1450; //PVC //946;// polipropilene //900 vecchia densità;
 
 
 // Coordinate systems with position and rotation of important items in the 
@@ -100,8 +100,8 @@ ChCoordsys<> Spazzola_csys  ( ChVector<>(conveyor_length/2-0.10, -(drumdiameter*
 
 
 // set as true for saving log files each n frames
-bool save_dataset =false;
-bool save_irrlicht_screenshots =false;
+bool save_dataset = false;
+bool save_irrlicht_screenshots = false;
 bool save_POV_screenshots = false;
 int saveEachNframes = 8;
 
@@ -109,7 +109,7 @@ bool irr_cast_shadows = true;
 
 int totframes = 0;
 	
-bool init_particle_speed = false;
+bool init_particle_speed = true;
 
 double particle_magnification = 1; // for larger visualization of particle ***Edo
 
@@ -343,11 +343,11 @@ void create_debris(double dt, double particles_second,
 
 	double sph_fraction = 0;
 	double box_fraction = 0;
-	double cyl_fraction = 1-box_fraction-sph_fraction;
+	double cyl_fraction = 1 - box_fraction - sph_fraction;
 
 	//double sphrad = 0.6e-3 + (ChRandom()-0.5)*(0.6e-3); vecchia distribuzione
-	double sphrad = 0.005;//3e-3; 
-	double cylhei = 0.02;
+	double sphrad = 0.009;//3e-3; 
+	double cylhei = 0.003;
 	double cylrad = sphrad;
 	double cylmass = CH_C_PI*pow(cylrad,2)*cylhei* 1.0;  // now with default 1.0 density
 	double sphmass = (4./3.)*CH_C_PI*pow(sphrad,3)* 1.0; // now with default 1.0 density
@@ -387,7 +387,7 @@ void create_debris(double dt, double particles_second,
 			mrigidBody->SetPos(rand_position);
 			mrigidBody->SetMass(sphmass);
 			mrigidBody->SetInertiaXX(ChVector<>(sphinertia,sphinertia,sphinertia));
-			mrigidBody->SetFriction(0.2f);
+			mrigidBody->SetFriction(0.6f);
 		    mrigidBody->SetRollingFriction(0.2f);
 			mrigidBody->SetNoGyroTorque(true);
 			
@@ -442,7 +442,7 @@ void create_debris(double dt, double particles_second,
 			mrigidBody->SetPos(rand_position);
 			mrigidBody->SetMass(sphmass);
 			mrigidBody->SetInertiaXX(ChVector<>(sphinertia,sphinertia,sphinertia));
-			mrigidBody->SetFriction(0.4f);
+			mrigidBody->SetFriction(0.6f);
 			mrigidBody->SetImpactC(0.0f); 
 			mrigidBody->SetNoGyroTorque(true);
 
@@ -481,9 +481,11 @@ void create_debris(double dt, double particles_second,
 			ChSharedPtr<ChBody> mrigidBody(new ChBody);
 
 			mrigidBody->SetPos(rand_position);
+			mrigidBody->SetRot_dtdt(ChQuaternion<>(0, 0, 1, 0));
 			mrigidBody->SetMass(cylmass);
 			mrigidBody->SetInertiaXX(ChVector<>(cylinertia,cylinertia2,cylinertia));
-			mrigidBody->SetFriction(0.4f);
+			mrigidBody->SetFriction(0.6f);
+			mrigidBody->SetRollingFriction(0.6f);
 			mrigidBody->SetImpactC(0.0f);
 			mrigidBody->SetNoGyroTorque(true);
 			
@@ -529,7 +531,7 @@ void create_debris(double dt, double particles_second,
 			  
 			double rand_mat = ChRandom();
 
-			double plastic_fract = 0;
+			double plastic_fract = 1;
 				
 			if (rand_mat < plastic_fract)
 			{
