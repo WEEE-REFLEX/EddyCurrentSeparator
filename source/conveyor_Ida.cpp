@@ -57,8 +57,8 @@ double numberofpoles = 14;//Check this value // article 9
 double intensity = 0.19;//0.32;// article //0.19;//1900 gauss
 double drumdiameter = 0.233; //0.30; // article, lab è 0.233;
 double particles_dt;
-double debris_number = 0;
-double max_numb_particles = 0;//9;
+double debris_number = 1;
+double max_numb_particles = 1;//9;
 
 
 // conveyor constant
@@ -94,9 +94,8 @@ ChCoordsys<> conveyor_csys( ChVector<>(0, 0-conv_thick, 0) ) ; // default positi
 ChCoordsys<> drum_csys    ( ChVector<>(0,0,0) );  // default position  ***Edo  
 //ChCoordsys<> drum_csys    ( ChVector<>( - 0.246771402771896, + 0.53927223197952, 0.599465941750266) ); // CAD position (settato a mano!!! Ida)
 ChCoordsys<> nozzle_csys  ( ChVector<>(xnozzle, ynozzle, 0) ); // default position
-ChCoordsys<> Splitter1_csys  ( ChVector<>(conveyor_length/2+0.2, -(drumdiameter*0.5)-conv_thick/2,0) );  // default position
-ChCoordsys<> Splitter2_csys  ( ChVector<>(conveyor_length/2+0.4, -(drumdiameter*0.5)-conv_thick/2,0) );  // default position
-ChCoordsys<> Spazzola_csys  ( ChVector<>(conveyor_length/2-0.10, -(drumdiameter*0.5)-conv_thick/2,0) );  // default position
+ChCoordsys<> bins_csys(ChVector<>(0, 0, 0));  // default position
+
 
 
 // set as true for saving log files each n frames
@@ -531,7 +530,7 @@ void create_debris(double dt, double particles_second,
 			  
 			double rand_mat = ChRandom();
 
-			double plastic_fract = 1;
+			double plastic_fract = 0;
 				
 			if (rand_mat < plastic_fract)
 			{
@@ -1284,12 +1283,9 @@ int main(int argc, char* argv[])
 	try
 	{
 		//my_python.ImportSolidWorksSystem("../CAD_conveyor/conveyor_Ida", mphysicalSystem);  // note, don't type the .py suffix in filename..
-		//my_python.ImportSolidWorksSystem("../CAD_conveyor/prova_ida_senzacinghia", mphysicalSystem);
-		//my_python.ImportSolidWorksSystem("../CAD_conveyor/prova_edo", mphysicalSystem);
-		//my_python.ImportSolidWorksSystem("../CAD_conveyor/edo_mod_1206", mphysicalSystem);
 		//my_python.ImportSolidWorksSystem("../CAD_conveyor/NewCad", mphysicalSystem);
-		my_python.ImportSolidWorksSystem("../CAD_conveyor/Edo_0707_limits", mphysicalSystem);
-		//my_python.ImportSolidWorksSystem("../CAD_conveyor/Edo_1707_bigbox", mphysicalSystem);
+		my_python.ImportSolidWorksSystem("../CAD_conveyor/Edo_0707box_limits", mphysicalSystem);
+		
 	}
 	catch (ChException myerror)
 	{
@@ -1306,18 +1302,26 @@ int main(int argc, char* argv[])
 	if (my_marker.IsNull())
 		GetLog() << "Error: cannot find conveyor_origin marker from its name in the C::E system! \n";
 	else
-		conveyor_csys = my_marker->GetAbsCoord();  // fetch both pos and rotation of CAD
+		conveyor_csys = my_marker->GetAbsCoord();  // fetch both pos and rotation of CAD 
 		
 	
-	my_marker = mphysicalSystem.SearchMarker("Particles_origin_new").DynamicCastTo<ChMarker>();
+	my_marker = mphysicalSystem.SearchMarker("particles_origin_new").DynamicCastTo<ChMarker>();
 	if (my_marker.IsNull())
 		GetLog() << "Error: cannot find particles_origin marker from its name in the C::E system! \n";
 	else
 		nozzle_csys = my_marker->GetAbsCoord();  // fetch both pos and rotation of CAD
 
-    my_marker = mphysicalSystem.SearchMarker("conveyor_origin").DynamicCastTo<ChMarker>();
+
+	my_marker = mphysicalSystem.SearchMarker("bins_ref").DynamicCastTo<ChMarker>();
 	if (my_marker.IsNull())
-		GetLog() << "Error: cannot find conveyor_origin marker from its name in the C::E system! \n"; 
+		GetLog() << "Error: cannot find box_ref marker from its name in the C::E system! \n";
+	else
+		bins_csys = my_marker->GetAbsCoord();  // fetch both pos and rotation of CAD
+
+
+	my_marker = mphysicalSystem.SearchMarker("drum_origin").DynamicCastTo<ChMarker>();
+	if (my_marker.IsNull())
+		GetLog() << "Error: cannot find drum_origin marker from its name in the C::E system! \n";
 	else
 		drum_csys = my_marker->GetAbsCoord(); // fetch both pos and rotation of CAD
 
@@ -1340,7 +1344,7 @@ int main(int argc, char* argv[])
 		//mrigidBodyDrum->SetRollingFriction(0.2f);
 		//mrigidBodyDrum->SetSpinningFriction(0.2f);
 	}
-	
+
 
 	//
 	// Create a truss (absolute fixed reference body, for connecting the rotating cyl.)
@@ -1387,18 +1391,6 @@ int main(int argc, char* argv[])
 	mbox->GetBoxGeometry().SetLengths(ChVector<>(conveyor_length,conv_thick, conveyor_width));
 	mconveyor->AddAsset(mbox);
 	
-
-	// //***TEST*** mistero!!! (spiegato) si può togliere...
-	//  ChBodySceneNode* mfence2 = (ChBodySceneNode*)addChBodySceneNode_easyBox(
-	//											&mphysicalSystem, application.GetSceneManager(),
-	//											1.0,
-	//											conveyor_csys.pos + ChVector<>(0, 0.2, 0),
-	//											ChQuaternion<>(1,0,0,0), 
-	//											ChVector<>(0.1,0.11,0.1) );
-	// //mfence2->GetBody()->SetBodyFixed(true);
-	// mfence2->GetBody()->SetFriction(0.1);
-
-
 	// 
 	// Create a motor constraint between the cylinder and the truss
 	//
