@@ -52,7 +52,7 @@ double STATIC_flow = 100;
 double STATIC_speed = -0.7; // Experiments //-1.87; // Articolo //- 1; //[m/s]
 
 double mu0 = 0.0000012566; //vacuum permability [Tm/A]  ****** Edo
-double drumspeed = 0.3*547.83;// % of rotor speed // article 261; //[rad/s]
+double drumspeed = 0.1*547.83;// % of rotor speed // article 261; //[rad/s]
 double numberofpoles = 14;//Check this value // article 9
 double intensity = 0.19;//0.32;// article //0.19;//1900 gauss
 double drumdiameter = 0.233; //0.30; // article, lab è 0.233;
@@ -345,7 +345,7 @@ void create_debris(double dt, double particles_second,
 	double cyl_fraction = 1 - box_fraction - sph_fraction;
 
 	//double sphrad = 0.6e-3 + (ChRandom()-0.5)*(0.6e-3); vecchia distribuzione
-	double sphrad = 0.009;//3e-3; 
+	double sphrad = 0.0075;//3e-3; 
 	double cylhei = 0.003;
 	double cylrad = sphrad;
 	double cylmass = CH_C_PI*pow(cylrad,2)*cylhei* 1.0;  // now with default 1.0 density
@@ -530,7 +530,7 @@ void create_debris(double dt, double particles_second,
 			  
 			double rand_mat = ChRandom();
 
-			double plastic_fract = 0;
+			double plastic_fract = 1;
 				
 			if (rand_mat < plastic_fract)
 			{
